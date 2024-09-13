@@ -10,9 +10,9 @@ Frontend Developers:
 3. Haifaa Janoudi
 
 Backend Developers: 
-1. 
-2. 
-3. 
+1. Yan Pilon
+2. Hawraaa Al-Adilee
+3. Carmen Derderian
 
 ## Project Approach
 - This project is expected to be completed after 4 sprints, with each sprint lasting 2 weeks each.
