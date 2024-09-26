@@ -1,6 +1,6 @@
 .footer{
     color: #D9D9D9;
-    background-color: #323232;
+    background-color: #A4133C;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -10,7 +10,7 @@
 }
 
  .logo {
-    width: 190px;
+    width: 200px;
 }
 .footer-content{
     width: 100%;
