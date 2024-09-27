@@ -1,0 +1,61 @@
+.explore-menu{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.explore-menu h1{
+    color: #262626;
+    font-weight: 500;
+    font-size: 2.5em; /* Adjust the size as needed */
+    font-weight: bold; /* Makes the text bold */
+}
+.explore-menu-text{
+    max-width: 90%;
+    color: #696262;
+}
+.explore-menu-list{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    text-align: center;
+    margin: 20px 0px;
+    overflow-x: scroll;
+}
+.explore-menu-list::-webkit-scrollbar{
+    display: none;
+}
+.explore-menu-list-item img {
+    width: 7.5vw; /* Responsive width */
+    min-width: 80px; /* Minimum width */
+    height: 7.5vw; /* Force height to match width */
+    min-height: 80px; /* Minimum height to match width */
+    cursor: pointer;
+    border-radius: 50%; /* Make the image circular */
+    object-fit: cover; /* Ensure the image covers the circular area */
+    overflow: hidden; /* Hide any overflow */
+    transition: 0.2s; /* Smooth transition */
+}
+
+.explore-menu-list-item .active{
+    border: 4px solid tomato;
+    padding: 2px;
+}
+.explore-menu-list-item p{
+    margin-top: 10px;
+    color: #747474;
+    font-size: max(1.4vw,16px);
+    cursor: pointer;
+}
+.explore-menu hr{
+    margin: 10px 0px;
+    height: 2px;
+    background-color: #E2E2E2;
+    border: none;
+}
+@media (max-width:1050px) {
+    .explore-menu-text{
+        max-width: 100%;
+        font-size: 14px;
+    }
+}

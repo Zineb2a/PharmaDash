@@ -46,7 +46,6 @@ import food_29 from './food_29.png'
 import food_30 from './food_30.png'
 import food_31 from './food_31.png'
 import food_32 from './food_32.png'
-
 import basket from './basket.png'
 import translogo from './translogo.png'
 import add_icon_white from './add_icon_white.png'
@@ -98,35 +97,35 @@ export const assets = {
 
 export const menu_list = [
     {
-        menu_name: "Haifaa",
+        menu_name: "Cold and Flu",
         menu_image: menu_1
     },
     {
-        menu_name: "Rolls",
+        menu_name: "Allergy and Antihistamines",
         menu_image: menu_2
     },
     {
-        menu_name: "Deserts",
+        menu_name: "Muscle Reliefs",
         menu_image: menu_3
     },
     {
-        menu_name: "Sandwich",
+        menu_name: "Digestive System Relief",
         menu_image: menu_4
     },
     {
-        menu_name: "Cake",
+        menu_name: "Pain Relievers",
         menu_image: menu_5
     },
     {
-        menu_name: "Pure Veg",
+        menu_name: "Vitamins Suppliments",
         menu_image: menu_6
     },
     {
-        menu_name: "Pasta",
+        menu_name: "Topical Antibiotics",
         menu_image: menu_7
     },
     {
-        menu_name: "Noodles",
+        menu_name: "First Aid and Wound Care",
         menu_image: menu_8
     }]
 

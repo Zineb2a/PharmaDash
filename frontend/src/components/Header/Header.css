@@ -1,55 +1,83 @@
-.header{
-    height: 34vw;
-    margin: 30px auto;
-    background: url('/header_img.png') no-repeat;
-    background-size:contain;
+.header {
+    width: 95vw; /* Full viewport width */
+    height: 28vw; /* Adjusted height */
+    margin: 0 auto;
+    background: url('/header_img.png') no-repeat center center;
+    background-size: cover;
     position: relative;
+    margin-bottom: 8vw; /* Add space below the header */
+    border-radius: 8px;
 }
-.header-contents{
-    position: absolute;
+
+.header-contents {
+    position: absolute; /* Position text over the image */
+    top: 77.8%; /* Vertically position */
+    left: 0%; /* Align to the left of the header */
+    transform: translateY(-50%); /* Adjust vertical alignment */
     display: flex;
     flex-direction: column;
-    align-items: start;
-    gap: 1.5vw;
-    max-width: 50%;
-    bottom: 10%;
-    left: 6vw;
+    align-items: start; /* Align text to the start (left) */
+    width: 90%; /* Slightly reduce width to fit nicely */
+    padding: 2vw; /* Add padding for better spacing */
+    color: white; /* Ensure text color is visible */
+    background-color: rgba(214, 197, 197, 0.527); /* Add semi-transparent background */
+    border-radius: 8px; /* Optional: round the corners */
     animation: fadeIn 3s;
 }
-.header-contents h2{
-    font-weight:500;
-    color: white;
-    font-size: max(4.5vw,22px);
-}
-.header-contents p{
-    color: white;
-    font-size: 1vw;
-}
-.header-contents button{
+
+.header-contents button {
     border: none;
     color: #747474;
-    font-weight: 500;
-    padding: 1vw 2.3vw;
+    font-weight: 600;
+    padding: 0.8vw 2vw; /* Reduce padding */
     background: white;
-    font-size: max(1vw,13px);
+    font-size: max(1.2vw, 12px); /* Adjust font size */
     border-radius: 50px;
+    width: 30%; /* Make the button fit its content */
+    margin-top: 1vw; /* Add margin to separate from text */
+    cursor: pointer; /* Make it appear clickable */
 }
-@media (max-width:1050px) {
-    .header{
-        height: 38vw;
+
+
+.header-contents h2 {
+    font-weight: 500;
+    color: rgb(167, 23, 23); /* Ensure text color contrasts with background */
+    font-size: max(2.5vw, 10px); /* Reduce font size */
+}
+
+.header-contents p {
+    color: rgb(241, 233, 233);
+    font-size: 1.5vw; /* Make paragraph font smaller */
+}
+
+
+@media (max-width: 1050px) {
+    .header {
+        height: 32vw; /* Adjust height on medium screens */
     }
-    .header-contents{
+    
+    .header-contents {
         max-width: 45%;
     }
 }
-@media(max-width:750px){
-    .header-contents{
-        max-width: 55%;
+
+@media (max-width: 750px) {
+    .header {
+        height: auto; /* Adjust height */
     }
-    .header-contents p{
-       display: none;
+
+    .header-contents {
+        top: 60%; /* Slightly adjust vertical position */
+        max-width: 80%; /* Full width for smaller screens */
+        left: 10%; /* Center-align text */
+        text-align: center; /* Center-align content */
     }
-    .header-contents button{
+    
+    .header-contents p {
+        display: none; /* Hide paragraph text */
+    }
+    
+    .header-contents button {
         padding: 2vw 4vw;
     }
 }
