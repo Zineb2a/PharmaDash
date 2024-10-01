@@ -1,0 +1,163 @@
+/* Container Styles */
+.food-display {
+    margin-top: 30px;
+    padding: 1rem;
+    animation: fadeIn 1s ease-in-out; /* Fade-in animation for the section */
+}
+
+/* Header Section */
+.food-display-header {
+    text-align: left;
+    margin-bottom: 4rem; /* Add spacing below the header */
+}
+
+/* Main Heading Styles */
+.main-heading {
+    font-size: max(3vw, 28px); /* Larger heading */
+    font-weight: 800; /* Extra bold for emphasis */
+    color: #333;
+    background: linear-gradient(45deg, #e74c3c, #5e0d04); /* Gradient text */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent; /* Gradient effect */
+    animation: slideIn 1s ease-in-out; /* Slide-in animation */
+    margin-bottom: 0.5rem; /* Add spacing between main heading and subheading */
+}
+
+/* Subheading Styles */
+.subheading {
+    font-size: max(1.5vw, 18px); /* Slightly larger subheading */
+    color: #666; /* Subtle text color */
+    font-weight: 400; /* Normal font weight */
+    line-height: 1.4; /* Spacing for readability */
+    opacity: 0; /* Initial state for animation */
+    animation: fadeInUp 1.5s ease-in-out forwards; /* Fade in with slide up */
+    animation-delay: 0.5s; /* Delay to make it appear after the main heading */
+}
+
+/* Grid Styles */
+.food-display-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 30px;
+    row-gap: 50px;
+    padding: 1rem;
+}
+
+/* Card Styles */
+.food-display-list-item {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+/* Hover Effect */
+.food-display-list-item:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Image Styles */
+.food-display-list-item img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: 1rem;
+}
+
+/* Price Styles */
+.food-display-list-item p.price {
+    font-size: 1.2rem;
+    color: #e74c3c;
+    font-weight: 700;
+    margin-top: 0.5rem;
+}
+
+/* Description Styles */
+.food-display-list-item p.description {
+    font-size: 0.9rem;
+    color: #555;
+    margin-top: 0.5rem;
+}
+
+/* Add button styling */
+.food-display-list-item .add-button {
+    background-color: #e74c3c;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background-color 0.3s;
+}
+
+.food-display-list-item .add-button:hover {
+    background-color: #c0392b;
+}
+
+/* Keyframes for animations */
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .main-heading {
+        font-size: 22px;
+    }
+
+    .subheading {
+        font-size: 16px;
+    }
+
+    .food-display-list-item {
+        padding: 0.8rem;
+    }
+
+    .food-display-list-item img {
+        width: 80px;
+        height: 80px;
+    }
+
+    .food-display-list-item p.price {
+        font-size: 1rem;
+    }
+
+    .food-display-list-item p.description {
+        font-size: 0.8rem;
+    }
+}

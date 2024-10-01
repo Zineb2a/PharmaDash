@@ -1,83 +1,109 @@
 .header {
-    width: 95vw; /* Full viewport width */
-    height: 28vw; /* Adjusted height */
+    height: 34vw;
     margin: 0 auto;
     background: url('/header_img.png') no-repeat center center;
     background-size: cover;
     position: relative;
-    margin-bottom: 8vw; /* Add space below the header */
-    border-radius: 8px;
+    margin-bottom: 8vw;
+    border-radius: 12px; /* Slightly increase the border-radius for a smoother look */
+    overflow: hidden; /* To ensure no content overflows */
+}
+
+.header::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.2); /* Darker overlay for better text visibility */
+    z-index: 1;
 }
 
 .header-contents {
-    position: absolute; /* Position text over the image */
-    top: 77.8%; /* Vertically position */
-    left: 0%; /* Align to the left of the header */
-    transform: translateY(-50%); /* Adjust vertical alignment */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2; /* Ensure content is above the overlay */
     display: flex;
     flex-direction: column;
-    align-items: start; /* Align text to the start (left) */
-    width: 90%; /* Slightly reduce width to fit nicely */
-    padding: 2vw; /* Add padding for better spacing */
-    color: white; /* Ensure text color is visible */
-    background-color: rgba(214, 197, 197, 0.527); /* Add semi-transparent background */
-    border-radius: 8px; /* Optional: round the corners */
+    align-items: center; /* Center text horizontally */
+    width: 90%;
+    padding: 2vw;
+    color: white;
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.1); /* Subtle background to make content stand out */
+    border-radius: 12px;
     animation: fadeIn 3s;
+}
+
+.header-contents h2 {
+    font-weight: 700; /* Bolder font for the heading */
+    color: #ffffff; /* White text for better contrast */
+    font-size: max(2.5vw, 24px); /* Adjust font size */
+    margin-bottom: 1rem; /* Add space below the heading */
+}
+
+.header-contents p {
+    font-size: max(1.2vw, 16px); /* Smaller font size for paragraph */
+    margin-bottom: 1.5rem; /* Space between text and button */
+    color: #f1e9e9; /* Lighter text color */
 }
 
 .header-contents button {
     border: none;
-    color: #747474;
+    color: #fff;
     font-weight: 600;
-    padding: 0.8vw 2vw; /* Reduce padding */
-    background: white;
-    font-size: max(1.2vw, 12px); /* Adjust font size */
+    padding: 0.8vw 2vw;
+    background: #e74c3c; /* More vibrant button color */
+    font-size: max(1.2vw, 14px);
     border-radius: 50px;
-    width: 30%; /* Make the button fit its content */
-    margin-top: 1vw; /* Add margin to separate from text */
-    cursor: pointer; /* Make it appear clickable */
+    cursor: pointer;
+    transition: background 0.3s, transform 0.3s; /* Add smooth transitions */
 }
 
-
-.header-contents h2 {
-    font-weight: 500;
-    color: rgb(167, 23, 23); /* Ensure text color contrasts with background */
-    font-size: max(2.5vw, 10px); /* Reduce font size */
+.header-contents button:hover {
+    background: #c0392b; /* Darker shade on hover */
+    transform: scale(1.05); /* Slightly enlarge button on hover */
 }
-
-.header-contents p {
-    color: rgb(241, 233, 233);
-    font-size: 1.5vw; /* Make paragraph font smaller */
-}
-
 
 @media (max-width: 1050px) {
     .header {
-        height: 32vw; /* Adjust height on medium screens */
+        height: 32vw;
     }
-    
+
     .header-contents {
-        max-width: 45%;
+        max-width: 80%; /* More space for text on medium screens */
     }
 }
 
 @media (max-width: 750px) {
     .header {
-        height: auto; /* Adjust height */
+        height: auto;
     }
 
     .header-contents {
-        top: 60%; /* Slightly adjust vertical position */
-        max-width: 80%; /* Full width for smaller screens */
-        left: 10%; /* Center-align text */
-        text-align: center; /* Center-align content */
+        top: 60%;
+        max-width: 90%; /* Allow more space on smaller screens */
+        padding: 3vw;
     }
-    
+
     .header-contents p {
         display: none; /* Hide paragraph text */
     }
-    
+
     .header-contents button {
         padding: 2vw 4vw;
+    }
+}
+
+/* Keyframe animation for fade-in effect */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
     }
 }

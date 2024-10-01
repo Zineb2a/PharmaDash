@@ -21,7 +21,7 @@ const Navbar = ({ setShowLogin }) => {
       <Link to='/'><img className='logo' src={assets.logo2} alt="logo" /></Link> 
       <ul className="navbar-menu">
         <Link to="/" onClick={() => setMenu("home")} className={`${menu === "home" ? "active" : ""}`}>Home</Link>
-        <a href='#OTC' onClick={() => setMenu("OTC")} className={`${menu === "OTC" ? "active" : ""}`}>OTC's</a>
+        <a href='#explore-menu' onClick={() => setMenu("menu")} className={`${menu === "menu" ? "active" : ""}`}>OTC's</a>
         <a href='#Prescriptions' onClick={() => setMenu("Prescriptions")} className={`${menu === "Prescription" ? "active" : ""}`}>Prescriptions</a>
         <a href='#footer' onClick={() => setMenu("contact")} className={`${menu === "contact" ? "active" : ""}`}>Contact Us</a>
       </ul>
@@ -31,7 +31,7 @@ const Navbar = ({ setShowLogin }) => {
           <img src={assets.basket} alt="" />
           <div className={getTotalCartAmount() > 0 ? "dot" : ""}></div>
         </Link>
-        {!token ? <button onClick={() => setShowLogin(true)}>sign in</button>
+        {!token ? <button onClick={() => setShowLogin(true)}>Sign In</button>
           : <div className='navbar-profile'>
             <img src={assets.profile_icon} alt="" />
             <ul className='navbar-profile-dropdown'>

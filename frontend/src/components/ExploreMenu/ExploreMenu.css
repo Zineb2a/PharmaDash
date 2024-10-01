@@ -1,0 +1,169 @@
+/* Main container styles */
+.explore-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    padding: 2rem 1rem;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInSlideUp 1s forwards;
+}
+
+/* Enhanced Heading Styles */
+.explore-menu h1 {
+    color: #262626;
+    font-size: clamp(1.8rem, 5vw, 2.5rem); /* Responsive font size */
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(45deg, #e74c3c, #5e0d04); /* Gradient color */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent; /* For gradient text effect */
+    animation: gradientAnimation 3s ease-in-out infinite; /* Add gradient animation */
+    letter-spacing: 1px; /* Slightly increase letter-spacing */
+    text-transform: uppercase; /* Make text uppercase */
+}
+
+/* Subheading */
+.explore-menu-text {
+    max-width: 80%;
+    color: #696262;
+    text-align: center;
+    font-size: clamp(1rem, 3vw, 1.2rem); /* Responsive font size */
+    line-height: 1.5;
+    font-weight: 300; /* Lighter font-weight */
+    letter-spacing: 0.5px; /* Add letter-spacing for modern feel */
+    animation: textPopUp 1.2s ease-in-out 0.2s;
+}
+
+/* List and items */
+.explore-menu-list {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    text-align: center;
+    margin: 20px 0px;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+}
+
+/* Scrollbar styles */
+.explore-menu-list::-webkit-scrollbar {
+    height: 5px;
+    background: #f1f1f1;
+}
+
+.explore-menu-list::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+/* List item animations */
+.explore-menu-list-item {
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+    margin: 10px; /* Add margin to create space between items */
+}
+
+/* Active state animation */
+.explore-menu-list-item .active {
+    border: 4px solid #e74c3c;
+    padding: 2px;
+    animation: activePulse 1s infinite; /* Add pulse animation to active category */
+}
+
+/* Image styles */
+.explore-menu-list-item img {
+    width: 10vw; /* Adjust width for larger screens */
+    min-width: 80px; /* Minimum width */
+    height: 10vw;
+    min-height: 80px;
+    cursor: pointer;
+    border-radius: 50%;
+    object-fit: cover;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: 0.3s ease;
+}
+
+.explore-menu-list-item p {
+    margin-top: 10px;
+    color: #747474;
+    font-size: clamp(1rem, 2.5vw, 1.2rem); /* Responsive font size */
+    cursor: pointer;
+    animation: fadeInSlideUp 0.8s ease-in-out 0.5s; /* Staggered animation */
+}
+
+/* Horizontal rule */
+.explore-menu hr {
+    margin: 20px 0px;
+    height: 2px;
+    background-color: #e2e2e2;
+    border: none;
+    width: 80%;
+}
+
+/* Keyframes for animations */
+@keyframes fadeInSlideUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes textPopUp {
+    0% {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes activePulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(231, 76, 60, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
+    }
+}
+
+/* Responsive styles */
+@media (max-width: 1050px) {
+    .explore-menu-list {
+        gap: 15px; /* Reduce gap for smaller screens */
+    }
+    
+    .explore-menu-text {
+        max-width: 90%;
+        font-size: 14px;
+    }
+
+    .explore-menu-list-item img {
+        width: 20vw; /* Increase image size on smaller screens */
+        height: 20vw;
+    }
+}
+
+@media (max-width: 750px) {
+    .explore-menu-text {
+        max-width: 100%;
+        font-size: 14px;
+    }
+
+    .explore-menu-list-item img {
+        width: 25vw; /* Adjust image size for very small screens */
+        height: 25vw;
+    }
+}
