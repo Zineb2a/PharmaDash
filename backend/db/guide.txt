@@ -1,0 +1,13 @@
+To run migrate commands (from backend folder):
+migrate -path db/migrations -database "<connection_string>" -verbose <command_to_be_executed>
+
+To create a new migration (from backend folder):
+migrate create -ext sql -dir db/migrations -seq <name_of_migration>
+
+sqlc generate
+after having modified the query and schema files
+
+Transactions:
+use tx.Commit() if there are no errors at the end of the transaction
+if error call tx.Rollback()
+tx.Rollback() can be defered since if Commit is called first then rollback has no effect
