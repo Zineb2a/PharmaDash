@@ -41,6 +41,25 @@ position: relative;
     top: -8px;
     right: -8px;
 }
+.navbar-search-button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+.navbar-search-button img {
+    width: 24px; 
+    height: 24px;
+}
+
+.navbar-search-input {
+  padding: 8px;
+  font-size: 16px;
+  border: 1px solid #C9184A;
+  border-radius: 10px;
+  margin-left: 10px;
+}
 
 .navbar-right button {
     background: transparent;

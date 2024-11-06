@@ -7,6 +7,7 @@ import { StoreContext } from '../../Context/StoreContext'
 const Navbar = ({ setShowLogin }) => {
 
   const [menu, setMenu] = useState("home");
+  const [searchVisible, setSearchVisible] = useState(false);
   const { getTotalCartAmount, token ,setToken } = useContext(StoreContext);
   const navigate = useNavigate();
 
@@ -15,6 +16,9 @@ const Navbar = ({ setShowLogin }) => {
     setToken("");
     navigate('/')
   }
+  const toggleSearch = () => {
+    setSearchVisible(prev => !prev);
+  };
 
   return (
     <div className='navbar'>
@@ -26,11 +30,25 @@ const Navbar = ({ setShowLogin }) => {
         <a href='#footer' onClick={() => setMenu("contact")} className={`${menu === "contact" ? "active" : ""}`}>Contact Us</a>
       </ul>
       <div className="navbar-right">
-        <img src={assets.search} alt="" />
+
+        
+        <button onClick={toggleSearch} className="navbar-search-button">
+          <img src={assets.search} alt="search icon" />
+        </button>
+        
+        {searchVisible && (
+          <input
+            type="text"
+            placeholder="Search..."
+            className="navbar-search-input"
+          />
+        )}
+
         <Link to='/cart' className='navbar-search-icon'>
           <img src={assets.basket} alt="" />
           <div className={getTotalCartAmount() > 0 ? "dot" : ""}></div>
         </Link>
+
         {!token ? <button onClick={() => setShowLogin(true)}>Sign In</button>
           : <div className='navbar-profile'>
             <img src={assets.profile_icon} alt="" />
