@@ -51,3 +51,27 @@ To get started with the frontend development:
    ```bash
    npm run dev
    ```
+
+To get started with the backend development:
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Zineb2a/PharmaDash.git
+   ```
+
+2. **Navigate into the project backend directory:**
+   ```bash
+   cd PharmaDash/backend
+   ```
+
+3. **Install dependencies:**
+   ```bash
+   go get .
+   ```
+
+4. Kindly ask Yan to send you the .env file
+
+5. **Run server:**
+   ```bash
+   go run ./
+   ```
