@@ -26,7 +26,7 @@ func GetNewServer() (*Server, error) {
 		return nil, err
 	}
 
-	pool, err := pgxpool.New(context.Background(), os.Getenv("CONNECTION_STRING"))
+	pool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
 		return nil, err
 	}
