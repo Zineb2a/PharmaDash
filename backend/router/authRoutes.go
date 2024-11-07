@@ -2,6 +2,8 @@ package server
 
 import (
 	"context"
+	"encoding/json"
+	"io"
 	"net/http"
 	db "pharmaDashServer/db/sqlc"
 	"pharmaDashServer/util"
@@ -15,14 +17,26 @@ import (
 // route: /api/user/register
 func (server *Server) RegisterNewAccount(c *gin.Context) {
 	ctx := context.Background()
-	//loginMode := c.PostForm("loginMode")
+
+	jsonData, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Server error."})
+		return
+	}
+	var payload util.RegisterRequest
+	err = json.Unmarshal(jsonData, &payload)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Invalid json payload format."})
+		return
+	}
+
 	createParams := db.CreateUserParams{
-		Name:        c.PostForm("name"),
-		LastName:    c.PostForm("lastname"),
-		Password:    c.PostForm("password"),
-		PhoneNumber: pgtype.Text{String: c.PostForm("phonenumber"), Valid: true},
-		Email:       pgtype.Text{String: c.PostForm("email"), Valid: true},
-		Address:     pgtype.Text{String: c.PostForm("address"), Valid: true},
+		Name:        payload.UserData.Name,
+		LastName:    payload.UserData.LastName,
+		Password:    payload.UserData.Password,
+		PhoneNumber: payload.UserData.PhoneNumber,
+		Email:       payload.UserData.Email,
+		Address:     payload.UserData.Address,
 	}
 
 	//acquire connection from connection pool
@@ -57,15 +71,6 @@ func (server *Server) RegisterNewAccount(c *gin.Context) {
 	}
 	createParams.Password = hash
 
-	//for later
-	// if loginMode == "client" {
-
-	// } else if loginMode == "driver" {
-
-	// } else {
-
-	// }
-
 	_, err = query.CreateUser(ctx, createParams)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "Could not create account, try later."})
@@ -80,8 +85,17 @@ func (server *Server) RegisterNewAccount(c *gin.Context) {
 func (server *Server) Login(c *gin.Context) {
 	ctx := context.Background()
 
-	email := c.PostForm("emailOrUsername")
-	password := c.PostForm("password")
+	jsonData, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Server error."})
+		return
+	}
+	var payload util.LoginRequest
+	err = json.Unmarshal(jsonData, &payload)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Invalid json payload format."})
+		return
+	}
 
 	//acquire connection from connection pools
 	conn, err := server.pool.Acquire(ctx)
@@ -93,31 +107,31 @@ func (server *Server) Login(c *gin.Context) {
 	query := db.New(conn)
 
 	//make sure all the necessary info is there
-	if email == "" || password == "" {
+	if payload.Email == "" || payload.Password == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "Invalid data"})
 		return
 	}
 
 	//check if user exists
 	var dbUser db.Account
-	dbEmailUser, err := query.GetUserByEmail(ctx, pgtype.Text{String: email, Valid: true})
+	dbEmailUser, err := query.GetUserByEmail(ctx, pgtype.Text{String: payload.Email, Valid: true})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "User does not exist"})
 		return
 	}
 	dbUser = dbEmailUser
 
-	if !util.CheckPasswordHash(password, dbUser.Password) {
+	if !util.CheckPasswordHash(payload.Password, dbUser.Password) {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "Authentication failed."})
 		return
 	} else {
-		token, err := server.maker.CreateToken(email, time.Hour)
+		token, err := server.maker.CreateToken(payload.Email, time.Hour)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"status": "Authentication failed due to internal error."})
 			return
 		}
 		//modify for local storage
-		c.SetCookie("lingtoken", token, 3600, "", "", false, true)
+		c.SetCookie("token", token, 3600, "", "", false, true)
 		c.JSON(http.StatusOK, gin.H{"status": "Authentication successful"})
 		return
 	}
