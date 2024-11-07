@@ -43,6 +43,13 @@ func GetNewServer() (*Server, error) {
 	{
 		// Gives information about the API in general, particularly about how to switch between versions
 		api.GET("", server.NotImplemented)
+		api := router.Group("user")
+		{
+			// Gives information about the API in general, particularly about how to switch between versions
+			api.POST("register", server.RegisterNewAccount)
+			api.POST("login", server.Login)
+			api.POST("logout", server.LogOut)
+		}
 	}
 	// load router
 	// load token maker

@@ -6,15 +6,16 @@ import (
 	db "pharmaDashServer/db/sqlc"
 	"pharmaDashServer/util"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/pgtype"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // route: /api/user/register
 func (server *Server) RegisterNewAccount(c *gin.Context) {
 	ctx := context.Background()
-	loginMode := c.PostForm("loginMode")
+	//loginMode := c.PostForm("loginMode")
 	createParams := db.CreateUserParams{
 		Name:        c.PostForm("name"),
 		LastName:    c.PostForm("lastname"),
@@ -57,13 +58,13 @@ func (server *Server) RegisterNewAccount(c *gin.Context) {
 	createParams.Password = hash
 
 	//for later
-	if loginMode == "client" {
+	// if loginMode == "client" {
 
-	} else if loginMode == "driver" {
+	// } else if loginMode == "driver" {
 
-	} else {
+	// } else {
 
-	}
+	// }
 
 	_, err = query.CreateUser(ctx, createParams)
 	if err != nil {
@@ -77,11 +78,52 @@ func (server *Server) RegisterNewAccount(c *gin.Context) {
 
 // route: /api/user/login
 func (server *Server) Login(c *gin.Context) {
-	//fetch account
-	//password comparison
-	//determine authentication level
+	ctx := context.Background()
+
+	email := c.PostForm("emailOrUsername")
+	password := c.PostForm("password")
+
+	//acquire connection from connection pools
+	conn, err := server.pool.Acquire(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Server error."})
+		return
+	}
+	defer conn.Release()
+	query := db.New(conn)
+
+	//make sure all the necessary info is there
+	if email == "" || password == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "Invalid data"})
+		return
+	}
+
+	//check if user exists
+	var dbUser db.Account
+	dbEmailUser, err := query.GetUserByEmail(ctx, pgtype.Text{String: email, Valid: true})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "User does not exist"})
+		return
+	}
+	dbUser = dbEmailUser
+
+	if !util.CheckPasswordHash(password, dbUser.Password) {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "Authentication failed."})
+		return
+	} else {
+		token, err := server.maker.CreateToken(email, time.Hour)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"status": "Authentication failed due to internal error."})
+			return
+		}
+		//modify for local storage
+		c.SetCookie("lingtoken", token, 3600, "", "", false, true)
+		c.JSON(http.StatusOK, gin.H{"status": "Authentication successful"})
+		return
+	}
 }
 
+// route: /api/user/logout
 func (server *Server) LogOut(c *gin.Context) {
 	c.SetCookie("token", "", -1, "", "", false, true)
 	c.JSON(http.StatusOK, gin.H{"status": "Successfully logged out."})
