@@ -48,6 +48,10 @@ func GetNewServer() (*Server, error) {
 			user.POST("/login", server.Login)
 			user.POST("/logout", server.LogOut)
 		}
+		cart := router.Group("/cart")
+		{
+			cart.POST("/create_cart", server.mustAuthChecker, server.CreateShoppingCart)
+		}
 	}
 	return server, nil
 }

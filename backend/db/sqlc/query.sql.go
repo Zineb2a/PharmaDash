@@ -11,9 +11,21 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const createShoppingCart = `-- name: CreateShoppingCart :one
+INSERT INTO ShoppingCart (account_id) 
+VALUES ($1) RETURNING cart_id, account_id
+`
+
+func (q *Queries) CreateShoppingCart(ctx context.Context, accountID int32) (Shoppingcart, error) {
+	row := q.db.QueryRow(ctx, createShoppingCart, accountID)
+	var i Shoppingcart
+	err := row.Scan(&i.CartID, &i.AccountID)
+	return i, err
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO Accounts (name, last_name, password, phone_number, email, address) 
-VALUES ($1,$2,$3,$4,$5,$6) RETURNING account_id, name, last_name, password, phone_number, email, address
+VALUES ($1,$2,$3,$4,$5,$6) RETURNING account_id, name, last_name, password, phone_number, email, address, authlevel
 `
 
 type CreateUserParams struct {
@@ -43,12 +55,83 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (Account
 		&i.PhoneNumber,
 		&i.Email,
 		&i.Address,
+		&i.Authlevel,
 	)
 	return i, err
 }
 
+const getAllShoppingCartItems = `-- name: GetAllShoppingCartItems :many
+SELECT shopping_cart_item_id, cart_id, sci.inventory_item_id, ii.inventory_item_id, ii.inventory_id, i.inventory_id, pharmacy_id, item_name, item_description, medication_name, unit_price, stock_quantity, otc
+FROM ShoppingCartItems AS sci
+INNER JOIN InventoryItems AS ii ON sci.inventory_item_id = ii.inventory_item_id
+INNER JOIN Inventory AS i ON ii.inventory_id = i.inventory_id
+WHERE sci.cart_id = $1
+`
+
+type GetAllShoppingCartItemsRow struct {
+	ShoppingCartItemID int32
+	CartID             int32
+	InventoryItemID    int32
+	InventoryItemID_2  int32
+	InventoryID        int32
+	InventoryID_2      int32
+	PharmacyID         int32
+	ItemName           string
+	ItemDescription    string
+	MedicationName     string
+	UnitPrice          pgtype.Numeric
+	StockQuantity      int32
+	Otc                pgtype.Bits
+}
+
+func (q *Queries) GetAllShoppingCartItems(ctx context.Context, cartID int32) ([]GetAllShoppingCartItemsRow, error) {
+	rows, err := q.db.Query(ctx, getAllShoppingCartItems, cartID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllShoppingCartItemsRow
+	for rows.Next() {
+		var i GetAllShoppingCartItemsRow
+		if err := rows.Scan(
+			&i.ShoppingCartItemID,
+			&i.CartID,
+			&i.InventoryItemID,
+			&i.InventoryItemID_2,
+			&i.InventoryID,
+			&i.InventoryID_2,
+			&i.PharmacyID,
+			&i.ItemName,
+			&i.ItemDescription,
+			&i.MedicationName,
+			&i.UnitPrice,
+			&i.StockQuantity,
+			&i.Otc,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getShoppingCartByClientID = `-- name: GetShoppingCartByClientID :one
+SELECT cart_id, account_id FROM ShoppingCart
+WHERE account_id = $1 LIMIT 1
+`
+
+func (q *Queries) GetShoppingCartByClientID(ctx context.Context, accountID int32) (Shoppingcart, error) {
+	row := q.db.QueryRow(ctx, getShoppingCartByClientID, accountID)
+	var i Shoppingcart
+	err := row.Scan(&i.CartID, &i.AccountID)
+	return i, err
+}
+
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT account_id, name, last_name, password, phone_number, email, address FROM Accounts
+SELECT account_id, name, last_name, password, phone_number, email, address, authlevel FROM Accounts
 WHERE email = $1 LIMIT 1
 `
 
@@ -63,6 +146,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email pgtype.Text) (Accoun
 		&i.PhoneNumber,
 		&i.Email,
 		&i.Address,
+		&i.Authlevel,
 	)
 	return i, err
 }

@@ -16,4 +16,49 @@ type Account struct {
 	PhoneNumber pgtype.Text
 	Email       pgtype.Text
 	Address     pgtype.Text
+	Authlevel   string
+}
+
+type Inventory struct {
+	InventoryID     int32
+	PharmacyID      int32
+	ItemName        string
+	ItemDescription string
+	MedicationName  string
+	UnitPrice       pgtype.Numeric
+	StockQuantity   int32
+	Otc             pgtype.Bits
+}
+
+type Inventoryitem struct {
+	InventoryItemID int32
+	InventoryID     int32
+}
+
+type Pharmacy struct {
+	PharmacyID  int32
+	CompanyName string
+	Location    string
+}
+
+type Prescription struct {
+	PrescriptionID int32
+	InventoryID    int32
+	ClientEmail    string
+	DoctorName     string
+	MedicationName string
+	DoseQuantity   int32
+	IssuedDate     pgtype.Date
+	ExpiryDate     pgtype.Date
+}
+
+type Shoppingcart struct {
+	CartID    int32
+	AccountID int32
+}
+
+type Shoppingcartitem struct {
+	ShoppingCartItemID int32
+	CartID             int32
+	InventoryItemID    int32
 }

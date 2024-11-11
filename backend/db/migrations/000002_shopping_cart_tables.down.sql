@@ -1,14 +1,14 @@
 ALTER TABLE Accounts
 DROP COLUMN authLevel;
 
-DROP TABLE IF EXISTS Pharmacies;
-
-DROP TABLE IF EXISTS Inventory;
-
-DROP TABLE IF EXISTS InventoryItems;
-
-DROP TABLE IF EXISTS Prescriptions;
+DROP TABLE IF EXISTS ShoppingCartItems;
 
 DROP TABLE IF EXISTS ShoppingCart;
 
-DROP TABLE IF EXISTS ShoppingCartItems;
+DROP TABLE IF EXISTS Prescriptions;
+
+DROP TABLE IF EXISTS InventoryItems;
+
+DROP TABLE IF EXISTS Inventory;
+
+DROP TABLE IF EXISTS Pharmacies;

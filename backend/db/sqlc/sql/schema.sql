@@ -54,5 +54,7 @@ CREATE TABLE IF NOT EXISTS ShoppingCart (
 CREATE TABLE IF NOT EXISTS ShoppingCartItems (
   shopping_cart_item_id SERIAL PRIMARY KEY,
   cart_id int NOT NULL,
-  FOREIGN KEY (cart_id) REFERENCES ShoppingCart(cart_id)
+  inventory_item_id int NOT NULL,
+  FOREIGN KEY (cart_id) REFERENCES ShoppingCart(cart_id),
+  FOREIGN KEY (inventory_item_id) REFERENCES InventoryItems(inventory_item_id)
 );
