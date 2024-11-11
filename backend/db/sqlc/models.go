@@ -33,6 +33,7 @@ type Inventory struct {
 type Inventoryitem struct {
 	InventoryItemID int32
 	InventoryID     int32
+	Reserved        pgtype.Bits
 }
 
 type Pharmacy struct {

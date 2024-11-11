@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS Inventory (
 CREATE TABLE IF NOT EXISTS InventoryItems (
   inventory_item_id SERIAL PRIMARY KEY,
   inventory_id int NOT NULL,
+  reserved bit NOT NULL,
   FOREIGN KEY (inventory_id) REFERENCES Inventory(inventory_id)
 );
 

@@ -20,3 +20,36 @@ FROM ShoppingCartItems AS sci
 INNER JOIN InventoryItems AS ii ON sci.inventory_item_id = ii.inventory_item_id
 INNER JOIN Inventory AS i ON ii.inventory_id = i.inventory_id
 WHERE sci.cart_id = $1;
+
+-- name: GetAvailableInventoryItem :one
+SELECT * FROM InventoryItems
+WHERE inventory_item_id = $1
+AND reserved = 0 LIMIT 1;
+
+-- name: GetInventoryItemByID :one
+SELECT * FROM InventoryItems
+WHERE inventory_item_id = $1 LIMIT 1;
+
+-- name: ReserveItem :one
+UPDATE InventoryItems SET reserved = 1
+WHERE inventory_item_id = $1 RETURNING *;
+
+-- name: FreeItem :one
+UPDATE InventoryItems SET reserved = 0
+WHERE inventory_item_id = $1 RETURNING *;
+
+-- name: DecrementInventoryStock :one
+UPDATE Inventory SET stock = stock - 1 
+WHERE inventory_id = $1 RETURNING *;
+
+-- name: IncrementInventoryStock :one
+UPDATE Inventory SET stock = stock - 1 
+WHERE inventory_id = $1 RETURNING *;
+
+-- name: CreateShoppingCartItem :one
+INSERT INTO ShoppingCartItems (cart_id, inventory_item_id) 
+VALUES ($1,$2) RETURNING *;
+
+-- name: DeleteCartItem :one
+DELETE FROM ShoppingCartItems 
+WHERE shopping_cart_item_id = $1 RETURNING *;

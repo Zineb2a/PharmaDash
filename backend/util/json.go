@@ -11,3 +11,13 @@ type LoginRequest struct {
 	Email    string
 	Password string
 }
+
+type AddItemToCartRequest struct {
+	CartID      int32
+	InventoryID int32
+}
+
+type RemoveItemFromCartRequest struct {
+	CartItemID      int32
+	InventoryItemID int32
+}
