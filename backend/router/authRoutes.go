@@ -137,6 +137,22 @@ func (server *Server) Login(c *gin.Context) {
 	}
 }
 
+func (server *Server) mustAuthChecker(c *gin.Context) {
+	tok, err := c.Cookie("token")
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"status": "User not Authenticated"})
+		return
+	}
+	//validation here
+	payload, err := server.maker.VerifyToken(tok) //must cast to payload.(*token.Payload) in order to use in subsequent routes
+	if err != nil {
+		c.SetCookie("token", "", -1, "", "", false, true)
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"status": "Authentication failed."})
+		return
+	}
+	c.Set("auth_payload", payload)
+}
+
 // route: /api/user/logout
 func (server *Server) LogOut(c *gin.Context) {
 	c.SetCookie("token", "", -1, "", "", false, true)
