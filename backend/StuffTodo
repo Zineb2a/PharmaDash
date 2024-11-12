@@ -1,0 +1,40 @@
+- 1: Create pharmacy table with sample data
+
+- 2: Create Inventory Table, assocs: Pharmacy
+
+- 3: Create Item table, assoc: Inventory
+
+- 4: Create Prescription Table with sample data, assocs: Pharmacy, Client
+    - Logically the pharmacy would have a record of all their active prescriptions so we can assume prescriptions already exist in the system
+
+- 5: Create Shopping Cart table, assoc: client
+
+- 6: Create Shopping Cart line item table, assoc: shopping cart, items
+
+
+Shopping cart -- go to Checkout --> Quotation -- Payment --> Order
+
+Create Shopping cart:
+    Check if user already has active cart
+        -return cart id and all cart line items if true
+        -if not create cart and send id
+    Fetch all user prescriptions
+    Send all user prescription items
+    Send all OTC items
+
+Add item to cart:
+    -find line item and mark unavailable in Item
+    -add shopping cart line item
+    -decrement item count in Inventory
+
+Remove Item from cart:
+    -find line item and mark available in Item
+    -increment item count in Inventory
+    -delete shopping cart line item
+
+Cancel Shopping cart:
+    - Remove all items
+    - delete shopping cart 
+
+
+MAYBE fix all the security flaws lol :3
