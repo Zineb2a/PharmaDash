@@ -58,6 +58,7 @@ func GetNewServer() (*Server, error) {
 			cart.POST("/add_cart_item", server.mustAuthChecker, server.addCartItem)
 			cart.POST("/remove_cart_item", server.mustAuthChecker, server.removeCartItem)
 			cart.POST("/cancel_cart", server.mustAuthChecker, server.cancelShoppingCart)
+			cart.POST("/delivery_quotation", server.mustAuthChecker, server.CreateDeliveryQuotation)
 
 		}
 	}

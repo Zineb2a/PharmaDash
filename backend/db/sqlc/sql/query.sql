@@ -68,3 +68,22 @@ SET reserved = 0
 FROM ShoppingCartItems AS sci
 WHERE ii.inventory_item_id = sci.inventory_item_id
 AND sci.cart_id = $1 RETURNING *;
+
+-- name: GetShoppingCartItemsWithPrice :many
+SELECT 
+    sc.cart_id, 
+    sci.shopping_cart_item_id, 
+    ii.inventory_item_id, 
+    i.unit_price
+FROM 
+    ShoppingCart AS sc
+JOIN 
+    ShoppingCartItems AS sci ON sc.cart_id = sci.cart_id
+JOIN 
+    InventoryItems AS ii ON sci.inventory_item_id = ii.inventory_item_id
+JOIN 
+    Inventory AS i ON ii.inventory_id = i.inventory_id
+WHERE 
+    sc.cart_id = $1;
+
+
