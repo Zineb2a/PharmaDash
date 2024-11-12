@@ -39,12 +39,12 @@ UPDATE InventoryItems SET reserved = 0
 WHERE inventory_item_id = $1 RETURNING *;
 
 -- name: DecrementInventoryStock :one
-UPDATE Inventory SET stock = stock - 1 
-WHERE inventory_id = $1 RETURNING *;
+UPDATE Inventory SET stock_quantity = stock_quantity - $1 
+WHERE inventory_id = $2 RETURNING *;
 
 -- name: IncrementInventoryStock :one
-UPDATE Inventory SET stock = stock - 1 
-WHERE inventory_id = $1 RETURNING *;
+UPDATE Inventory SET stock_quantity = stock_quantity + $1 
+WHERE inventory_id = $2 RETURNING *;
 
 -- name: CreateShoppingCartItem :one
 INSERT INTO ShoppingCartItems (cart_id, inventory_item_id) 
@@ -53,3 +53,18 @@ VALUES ($1,$2) RETURNING *;
 -- name: DeleteCartItem :one
 DELETE FROM ShoppingCartItems 
 WHERE shopping_cart_item_id = $1 RETURNING *;
+
+-- name: DeleteAllCartItems :one
+DELETE FROM ShoppingCartItems 
+WHERE cart_id = $1 RETURNING *;
+
+-- name: DeleteCart :one
+DELETE FROM ShoppingCart 
+WHERE cart_id = $1 RETURNING *;
+
+-- name: FreeAllCartItems :one
+UPDATE InventoryItems AS ii
+SET reserved = 0
+FROM ShoppingCartItems AS sci
+WHERE ii.inventory_item_id = sci.inventory_item_id
+AND sci.cart_id = $1 RETURNING *;

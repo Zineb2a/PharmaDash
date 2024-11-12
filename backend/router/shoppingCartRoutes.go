@@ -100,18 +100,23 @@ func (server *Server) addCartItem(c *gin.Context) {
 		return
 	}
 	//decrement stock in inventory
-	_, err = query.DecrementInventoryStock(ctx, inventoryID)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"status": "Failed to process request."})
-		return
-	}
+
+	// params1 := db.DecrementInventoryStockParams{
+	// 	StockQuantity: 1,
+	// 	InventoryID:   inventoryItem.InventoryID,
+	// }
+	// _, err = query.DecrementInventoryStock(ctx, params1)
+	// if err != nil {
+	// 	c.JSON(http.StatusOK, gin.H{"status": "Failed to process request."})
+	// 	return
+	// }
 
 	//create shopping cart Item
-	params := db.CreateShoppingCartItemParams{
+	params2 := db.CreateShoppingCartItemParams{
 		CartID:          payload.CartID,
 		InventoryItemID: inventoryItem.InventoryID,
 	}
-	cartItem, err := query.CreateShoppingCartItem(ctx, params)
+	cartItem, err := query.CreateShoppingCartItem(ctx, params2)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"status": "Failed to create cart item."})
 		return
@@ -146,11 +151,11 @@ func (server *Server) removeCartItem(c *gin.Context) {
 	query := db.New(nil)
 	query = query.WithTx(conn)
 
-	inventoryItem, err := query.GetInventoryItemByID(ctx, payload.InventoryItemID)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"status": "Failed to reserve item."})
-		return
-	}
+	// inventoryItem, err := query.GetInventoryItemByID(ctx, payload.InventoryItemID)
+	// if err != nil {
+	// 	c.JSON(http.StatusOK, gin.H{"status": "Failed to reserve item."})
+	// 	return
+	// }
 
 	//mark reserved
 	_, err = query.FreeItem(ctx, payload.InventoryItemID)
@@ -159,12 +164,16 @@ func (server *Server) removeCartItem(c *gin.Context) {
 		return
 	}
 
-	//decrement stock in inventory
-	_, err = query.IncrementInventoryStock(ctx, inventoryItem.InventoryID)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"status": "Failed to process request."})
-		return
-	}
+	// //decrement stock in inventory
+	// params := db.IncrementInventoryStockParams{
+	// 	StockQuantity: 1,
+	// 	InventoryID:   inventoryItem.InventoryID,
+	// }
+	// _, err = query.IncrementInventoryStock(ctx, params)
+	// if err != nil {
+	// 	c.JSON(http.StatusOK, gin.H{"status": "Failed to process request."})
+	// 	return
+	// }
 
 	//Delete cart item
 	_, err = query.DeleteCartItem(ctx, payload.CartItemID)
@@ -178,8 +187,50 @@ func (server *Server) removeCartItem(c *gin.Context) {
 }
 
 func (server *Server) cancelShoppingCart(c *gin.Context) {
+	ctx := context.Background()
+
+	jsonData, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Server error."})
+		return
+	}
+	var payload util.DeleteCartRequest
+	err = json.Unmarshal(jsonData, &payload)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Invalid json payload format."})
+		return
+	}
+
+	//acquire connection from connection pools
+	conn, err := server.pool.Begin(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Server error."})
+		return
+	}
+	defer conn.Rollback(ctx)
+	query := db.New(nil)
+	query = query.WithTx(conn)
+
 	//mark all items as available
+	_, err = query.FreeAllCartItems(ctx, payload.CartID)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"status": "Failed to free inventory items."})
+		return
+	}
 	//increment stock in inventory
-	//delete all cart items
+
+	//delete all cart items DONE
+	_, err = query.DeleteAllCartItems(ctx, payload.CartID)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"status": "Failed to delete cart items."})
+		return
+	}
 	//delete cart
+	_, err = query.DeleteCart(ctx, payload.CartID)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"status": "Failed to delete cart."})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "Cart deleted successfully"})
+	conn.Commit(ctx)
 }

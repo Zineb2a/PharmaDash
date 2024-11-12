@@ -51,6 +51,10 @@ func GetNewServer() (*Server, error) {
 		cart := router.Group("/cart")
 		{
 			cart.POST("/create_cart", server.mustAuthChecker, server.CreateShoppingCart)
+			cart.POST("/add_cart_item", server.mustAuthChecker, server.addCartItem)
+			cart.POST("/remove_cart_item", server.mustAuthChecker, server.removeCartItem)
+			cart.POST("/cancel_cart", server.mustAuthChecker, server.cancelShoppingCart)
+
 		}
 	}
 	return server, nil

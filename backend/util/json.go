@@ -21,3 +21,7 @@ type RemoveItemFromCartRequest struct {
 	CartItemID      int32
 	InventoryItemID int32
 }
+
+type DeleteCartRequest struct {
+	CartID int32
+}

@@ -78,12 +78,17 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (Account
 }
 
 const decrementInventoryStock = `-- name: DecrementInventoryStock :one
-UPDATE Inventory SET stock = stock - 1 
-WHERE inventory_id = $1 RETURNING inventory_id, pharmacy_id, item_name, item_description, medication_name, unit_price, stock_quantity, otc
+UPDATE Inventory SET stock_quantity = stock_quantity - $1 
+WHERE inventory_id = $2 RETURNING inventory_id, pharmacy_id, item_name, item_description, medication_name, unit_price, stock_quantity, otc
 `
 
-func (q *Queries) DecrementInventoryStock(ctx context.Context, inventoryID int32) (Inventory, error) {
-	row := q.db.QueryRow(ctx, decrementInventoryStock, inventoryID)
+type DecrementInventoryStockParams struct {
+	StockQuantity int32
+	InventoryID   int32
+}
+
+func (q *Queries) DecrementInventoryStock(ctx context.Context, arg DecrementInventoryStockParams) (Inventory, error) {
+	row := q.db.QueryRow(ctx, decrementInventoryStock, arg.StockQuantity, arg.InventoryID)
 	var i Inventory
 	err := row.Scan(
 		&i.InventoryID,
@@ -98,6 +103,30 @@ func (q *Queries) DecrementInventoryStock(ctx context.Context, inventoryID int32
 	return i, err
 }
 
+const deleteAllCartItems = `-- name: DeleteAllCartItems :one
+DELETE FROM ShoppingCartItems 
+WHERE cart_id = $1 RETURNING shopping_cart_item_id, cart_id, inventory_item_id
+`
+
+func (q *Queries) DeleteAllCartItems(ctx context.Context, cartID int32) (Shoppingcartitem, error) {
+	row := q.db.QueryRow(ctx, deleteAllCartItems, cartID)
+	var i Shoppingcartitem
+	err := row.Scan(&i.ShoppingCartItemID, &i.CartID, &i.InventoryItemID)
+	return i, err
+}
+
+const deleteCart = `-- name: DeleteCart :one
+DELETE FROM ShoppingCart 
+WHERE cart_id = $1 RETURNING cart_id, account_id
+`
+
+func (q *Queries) DeleteCart(ctx context.Context, cartID int32) (Shoppingcart, error) {
+	row := q.db.QueryRow(ctx, deleteCart, cartID)
+	var i Shoppingcart
+	err := row.Scan(&i.CartID, &i.AccountID)
+	return i, err
+}
+
 const deleteCartItem = `-- name: DeleteCartItem :one
 DELETE FROM ShoppingCartItems 
 WHERE shopping_cart_item_id = $1 RETURNING shopping_cart_item_id, cart_id, inventory_item_id
@@ -107,6 +136,37 @@ func (q *Queries) DeleteCartItem(ctx context.Context, shoppingCartItemID int32) 
 	row := q.db.QueryRow(ctx, deleteCartItem, shoppingCartItemID)
 	var i Shoppingcartitem
 	err := row.Scan(&i.ShoppingCartItemID, &i.CartID, &i.InventoryItemID)
+	return i, err
+}
+
+const freeAllCartItems = `-- name: FreeAllCartItems :one
+UPDATE InventoryItems AS ii
+SET reserved = 0
+FROM ShoppingCartItems AS sci
+WHERE ii.inventory_item_id = sci.inventory_item_id
+AND sci.cart_id = $1 RETURNING shopping_cart_item_id, cart_id, sci.inventory_item_id, ii.inventory_item_id, inventory_id, reserved
+`
+
+type FreeAllCartItemsRow struct {
+	ShoppingCartItemID int32
+	CartID             int32
+	InventoryItemID    int32
+	InventoryItemID_2  int32
+	InventoryID        int32
+	Reserved           pgtype.Bits
+}
+
+func (q *Queries) FreeAllCartItems(ctx context.Context, cartID int32) (FreeAllCartItemsRow, error) {
+	row := q.db.QueryRow(ctx, freeAllCartItems, cartID)
+	var i FreeAllCartItemsRow
+	err := row.Scan(
+		&i.ShoppingCartItemID,
+		&i.CartID,
+		&i.InventoryItemID,
+		&i.InventoryItemID_2,
+		&i.InventoryID,
+		&i.Reserved,
+	)
 	return i, err
 }
 
@@ -241,12 +301,17 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email pgtype.Text) (Accoun
 }
 
 const incrementInventoryStock = `-- name: IncrementInventoryStock :one
-UPDATE Inventory SET stock = stock - 1 
-WHERE inventory_id = $1 RETURNING inventory_id, pharmacy_id, item_name, item_description, medication_name, unit_price, stock_quantity, otc
+UPDATE Inventory SET stock_quantity = stock_quantity + $1 
+WHERE inventory_id = $2 RETURNING inventory_id, pharmacy_id, item_name, item_description, medication_name, unit_price, stock_quantity, otc
 `
 
-func (q *Queries) IncrementInventoryStock(ctx context.Context, inventoryID int32) (Inventory, error) {
-	row := q.db.QueryRow(ctx, incrementInventoryStock, inventoryID)
+type IncrementInventoryStockParams struct {
+	StockQuantity int32
+	InventoryID   int32
+}
+
+func (q *Queries) IncrementInventoryStock(ctx context.Context, arg IncrementInventoryStockParams) (Inventory, error) {
+	row := q.db.QueryRow(ctx, incrementInventoryStock, arg.StockQuantity, arg.InventoryID)
 	var i Inventory
 	err := row.Scan(
 		&i.InventoryID,
