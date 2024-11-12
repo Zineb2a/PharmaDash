@@ -41,8 +41,8 @@ func (q *Queries) CreateShoppingCartItem(ctx context.Context, arg CreateShopping
 }
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO Accounts (name, last_name, password, phone_number, email, address) 
-VALUES ($1,$2,$3,$4,$5,$6) RETURNING account_id, name, last_name, password, phone_number, email, address, authlevel
+INSERT INTO Accounts (name, last_name, password, phone_number, email, address, authLevel) 
+VALUES ($1,$2,$3,$4,$5,$6, 'client') RETURNING account_id, name, last_name, password, phone_number, email, address, authlevel
 `
 
 type CreateUserParams struct {
