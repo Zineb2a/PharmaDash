@@ -59,3 +59,16 @@ CREATE TABLE IF NOT EXISTS ShoppingCartItems (
   FOREIGN KEY (cart_id) REFERENCES ShoppingCart(cart_id),
   FOREIGN KEY (inventory_item_id) REFERENCES InventoryItems(inventory_item_id)
 );
+
+CREATE TABLE IF NOT EXISTS QuotationRequest (
+  quotation_id SERIAL PRIMARY KEY,
+  total_cost DECIMAL(10,2),
+  delivery_frequency TEXT NOT NULL,
+  destination        TEXT NOT NULL,
+  special_handling   TEXT,
+  insurance          DECIMAL(10,2),
+  include_insurance  BOOLEAN DEFAULT TRUE, -- apply by default
+  is_refused         BOOLEAN DEFAULT FALSE, -- default is accepted
+  cart_id            INTEGER,
+  FOREIGN KEY (cart_id) REFERENCES ShoppingCart(cart_id)
+)

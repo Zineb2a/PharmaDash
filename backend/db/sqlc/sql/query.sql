@@ -86,4 +86,11 @@ JOIN
 WHERE 
     sc.cart_id = $1;
 
+-- name: CreateQuotation :one
+INSERT INTO QuotationRequest (total_cost, delivery_frequency, destination, special_handling, insurance, include_insurance, is_refused, cart_id) 
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+RETURNING *;
 
+-- name: GetQuotationByID :one
+SELECT * FROM QuotationRequest
+WHERE quotation_id = $1 LIMIT 1;

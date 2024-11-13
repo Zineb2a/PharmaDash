@@ -12,8 +12,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgtype"
+
+	//"github.com/shopspring/decimal"
+	"math/big"
 )
 
+// Returned delivery quoatation
 type QuotationResponse struct {
 	Status      string  `json:"status"`
 	TotalCost   float64 `json:"total_cost"`
@@ -21,7 +25,25 @@ type QuotationResponse struct {
 	DeliveryFee float64 `json:"delivery_fee"`
 }
 
+// Contains specifications of the delivery service
+type QuotationRequest struct {
+	QuotationID       int32          `json:"quotation_id"` // to keep track of which quotation was reufsed or accepted
+	TotalCost         float64        `json:"total_cost"`
+	DeliveryFrequency string         `json:"delivery_frequency"`
+	Destination       string         `json:"destination"`
+	SpecialHandling   pgtype.Text    `json:"special_handling,omitempty"`
+	Insurance         pgtype.Numeric `json:"insurance"`
+	IncludeInsurance  bool           `json:"include_insurance"`
+	IsRefused         pgtype.Bool    `json:"is_refused"`
+	CartID            int32          `json:"cart_id"`
+}
+
 func (server *Server) CreateDeliveryQuotation(c *gin.Context) {
+	var req QuotationRequest // stores quotation request details
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "Invalid request."})
+		return
+	}
 
 	payload := c.MustGet("auth_payload").(*token.Payload)
 	email := payload.Username
@@ -61,15 +83,64 @@ func (server *Server) CreateDeliveryQuotation(c *gin.Context) {
 		totalCost += price
 	}
 
-	insuranceCost := 10.0
-	includeInsurance := true
-	deliveryFee := 5.0 // fixed delivery fee
+	insuranceRatio := 0.1                    // 10% of total cost
+	includeInsurance := req.IncludeInsurance // boolean
+	deliveryFee := 5.0
+	insuranceCost := 0.0 // fixed delivery fee
 
 	if includeInsurance {
-		totalCost += insuranceCost
+		insuranceCost = totalCost * insuranceRatio
+		totalCost -= insuranceCost
 	}
 
 	totalCost += deliveryFee
+
+	// var pgBool pgtype.Bool
+	// pgBool.Bool = req.IncludeInsurance  // Assign the boolean value directly
+	// pgBool.Valid = true                 // Mark as valid (or set to false if NULL)
+
+	bigIntInsurance := new(big.Int)
+	bigIntInsurance.SetInt64(int64(insuranceCost * 100)) // Convert to cents to avoid float precision issues
+
+	// Initialize pgtype.Numeric
+	var pgNumericInsurance pgtype.Numeric
+
+	// Assign the big.Int value to the pgtype.Numeric
+	pgNumericInsurance.Int = bigIntInsurance
+	pgNumericInsurance.Valid = true // Mark as valid
+
+	bigIntInsurance2 := new(big.Int)
+	bigIntInsurance2.SetInt64(int64(totalCost * 100)) // Convert to cents to avoid float precision issues
+
+	// Initialize pgtype.Numeric
+	var pgNumericInsurance2 pgtype.Numeric
+
+	// Assign the big.Int value to the pgtype.Numeric
+	pgNumericInsurance.Int = bigIntInsurance
+	pgNumericInsurance.Valid = true // Mark as valid
+
+	createQuotationParams := db.CreateQuotationParams{
+		TotalCost:         pgNumericInsurance2,
+		DeliveryFrequency: req.DeliveryFrequency,
+		Destination:       req.Destination,
+		SpecialHandling:   req.SpecialHandling,
+		Insurance:         pgNumericInsurance,
+		IncludeInsurance:  pgtype.Bool{Bool: true, Valid: true},
+		IsRefused:         pgtype.Bool{Bool: false, Valid: true}, // Assuming not refused when created
+	}
+
+	// Call CreateQuotation
+	createdQuotation, err := query.CreateQuotation(ctx, createQuotationParams)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to create quotation."})
+		return
+	}
+	// Type assertion for TotalCost
+	totalCost, err1 := createdQuotation.TotalCost.Int.Float64()
+	if err1 != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Invalid TotalCost type."})
+		return
+	}
 
 	// Set the struct
 	quotation := QuotationResponse{
@@ -82,4 +153,31 @@ func (server *Server) CreateDeliveryQuotation(c *gin.Context) {
 	// Return the quotation to the user
 	c.JSON(http.StatusOK, quotation)
 
+}
+
+// to keep track of acceptance or refusal of quotations
+func (server *Server) AcceptQuotation(c *gin.Context) {
+	var req struct {
+		QuotationID string `json:"quotation_id"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "Invalid request."})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "Quotation accepted, proceeding to payment."})
+
+	// CALL PAYMENT HERE - after quotation has been accepted
+}
+
+func (server *Server) RefuseQuotation(c *gin.Context) {
+	var req struct {
+		QuotationID string `json:"quotation_id"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "Invalid request."})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "Quotation refused, returning to previous options."})
 }

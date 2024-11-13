@@ -11,6 +11,49 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const createQuotation = `-- name: CreateQuotation :one
+INSERT INTO QuotationRequest (total_cost, delivery_frequency, destination, special_handling, insurance, include_insurance, is_refused, cart_id) 
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+RETURNING quotation_id, total_cost, delivery_frequency, destination, special_handling, insurance, include_insurance, is_refused, cart_id
+`
+
+type CreateQuotationParams struct {
+	TotalCost         pgtype.Numeric
+	DeliveryFrequency string
+	Destination       string
+	SpecialHandling   pgtype.Text
+	Insurance         pgtype.Numeric
+	IncludeInsurance  pgtype.Bool
+	IsRefused         pgtype.Bool
+	CartID            pgtype.Int4
+}
+
+func (q *Queries) CreateQuotation(ctx context.Context, arg CreateQuotationParams) (Quotationrequest, error) {
+	row := q.db.QueryRow(ctx, createQuotation,
+		arg.TotalCost,
+		arg.DeliveryFrequency,
+		arg.Destination,
+		arg.SpecialHandling,
+		arg.Insurance,
+		arg.IncludeInsurance,
+		arg.IsRefused,
+		arg.CartID,
+	)
+	var i Quotationrequest
+	err := row.Scan(
+		&i.QuotationID,
+		&i.TotalCost,
+		&i.DeliveryFrequency,
+		&i.Destination,
+		&i.SpecialHandling,
+		&i.Insurance,
+		&i.IncludeInsurance,
+		&i.IsRefused,
+		&i.CartID,
+	)
+	return i, err
+}
+
 const createShoppingCart = `-- name: CreateShoppingCart :one
 INSERT INTO ShoppingCart (account_id) 
 VALUES ($1) RETURNING cart_id, account_id
@@ -264,6 +307,28 @@ func (q *Queries) GetInventoryItemByID(ctx context.Context, inventoryItemID int3
 	row := q.db.QueryRow(ctx, getInventoryItemByID, inventoryItemID)
 	var i Inventoryitem
 	err := row.Scan(&i.InventoryItemID, &i.InventoryID, &i.Reserved)
+	return i, err
+}
+
+const getQuotationByID = `-- name: GetQuotationByID :one
+SELECT quotation_id, total_cost, delivery_frequency, destination, special_handling, insurance, include_insurance, is_refused, cart_id FROM QuotationRequest
+WHERE quotation_id = $1 LIMIT 1
+`
+
+func (q *Queries) GetQuotationByID(ctx context.Context, quotationID int32) (Quotationrequest, error) {
+	row := q.db.QueryRow(ctx, getQuotationByID, quotationID)
+	var i Quotationrequest
+	err := row.Scan(
+		&i.QuotationID,
+		&i.TotalCost,
+		&i.DeliveryFrequency,
+		&i.Destination,
+		&i.SpecialHandling,
+		&i.Insurance,
+		&i.IncludeInsurance,
+		&i.IsRefused,
+		&i.CartID,
+	)
 	return i, err
 }
 

@@ -53,6 +53,18 @@ type Prescription struct {
 	ExpiryDate     pgtype.Date
 }
 
+type Quotationrequest struct {
+	QuotationID       int32
+	TotalCost         pgtype.Numeric
+	DeliveryFrequency string
+	Destination       string
+	SpecialHandling   pgtype.Text
+	Insurance         pgtype.Numeric
+	IncludeInsurance  pgtype.Bool
+	IsRefused         pgtype.Bool
+	CartID            pgtype.Int4
+}
+
 type Shoppingcart struct {
 	CartID    int32
 	AccountID int32
