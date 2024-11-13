@@ -136,8 +136,8 @@ func (server *Server) CreateDeliveryQuotation(c *gin.Context) {
 		return
 	}
 	// Type assertion for TotalCost
-	totalCost, err1 := createdQuotation.TotalCost.Int.Float64()
-	if err1 != nil {
+	totalCost, acc := createdQuotation.TotalCost.Int.Float64()
+	if acc != big.Exact {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "Invalid TotalCost type."})
 		return
 	}
