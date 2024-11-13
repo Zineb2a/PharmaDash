@@ -25,3 +25,10 @@ type RemoveItemFromCartRequest struct {
 type DeleteCartRequest struct {
 	CartID int32
 }
+
+type OrderRequest struct {
+	CartID     int32
+	CardNumber string
+	ExpiryDate string
+	CVV        string
+}

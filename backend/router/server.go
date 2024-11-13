@@ -59,6 +59,7 @@ func GetNewServer() (*Server, error) {
 			cart.POST("/delivery_quotation/refuse", server.mustAuthChecker, server.RefuseQuotation)
 
 		}
+		api.POST("/order", server.CreateOrder)
 	}
 	return server, nil
 }
