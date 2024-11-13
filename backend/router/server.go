@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 	"os"
-	appsystem "pharmaDashServer/app_system"
 	"pharmaDashServer/token"
 
 	"github.com/gin-gonic/gin"
@@ -16,7 +15,6 @@ type Server struct {
 	Router *gin.Engine
 	maker  *token.PasetoMaker
 	pool   *pgxpool.Pool
-	system *appsystem.System
 }
 
 func GetNewServer() (*Server, error) {
@@ -34,12 +32,10 @@ func GetNewServer() (*Server, error) {
 	}
 
 	router := gin.Default()
-	system := appsystem.InitializeSystem()
 	server := &Server{
 		Router: router,
 		maker:  tokenMaker,
 		pool:   pool,
-		system: system,
 	}
 
 	//mount routes here
@@ -61,6 +57,7 @@ func GetNewServer() (*Server, error) {
 			cart.POST("/delivery_quotation", server.mustAuthChecker, server.CreateDeliveryQuotation)
 			cart.POST("/delivery_quotation/accept", server.mustAuthChecker, server.AcceptQuotation)
 			cart.POST("/delivery_quotation/refuse", server.mustAuthChecker, server.RefuseQuotation)
+
 		}
 	}
 	return server, nil

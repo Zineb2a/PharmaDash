@@ -3,8 +3,8 @@ SELECT * FROM Accounts
 WHERE email = $1 LIMIT 1;
 
 -- name: CreateUser :one
-INSERT INTO Accounts (name, last_name, password, phone_number, email, address, authLevel) 
-VALUES ($1,$2,$3,$4,$5,$6, 'client') RETURNING *;
+INSERT INTO Accounts (name, last_name, password, phone_number, email, address) 
+VALUES ($1,$2,$3,$4,$5,$6) RETURNING *;
 
 -- name: GetShoppingCartByClientID :one
 SELECT * FROM ShoppingCart
@@ -67,6 +67,7 @@ UPDATE InventoryItems AS ii
 SET reserved = 0
 FROM ShoppingCartItems AS sci
 WHERE ii.inventory_item_id = sci.inventory_item_id
+<<<<<<< HEAD
 AND sci.cart_id = $1 RETURNING *;
 
 -- name: GetShoppingCartItemsWithPrice :many
@@ -94,3 +95,6 @@ RETURNING *;
 -- name: GetQuotationByID :one
 SELECT * FROM QuotationRequest
 WHERE quotation_id = $1 LIMIT 1;
+=======
+AND sci.cart_id = $1 RETURNING *;
+>>>>>>> main
