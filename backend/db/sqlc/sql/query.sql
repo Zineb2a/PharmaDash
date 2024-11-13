@@ -67,4 +67,34 @@ UPDATE InventoryItems AS ii
 SET reserved = 0
 FROM ShoppingCartItems AS sci
 WHERE ii.inventory_item_id = sci.inventory_item_id
+<<<<<<< HEAD
 AND sci.cart_id = $1 RETURNING *;
+
+-- name: GetShoppingCartItemsWithPrice :many
+SELECT 
+    sc.cart_id, 
+    sci.shopping_cart_item_id, 
+    ii.inventory_item_id, 
+    i.unit_price
+FROM 
+    ShoppingCart AS sc
+JOIN 
+    ShoppingCartItems AS sci ON sc.cart_id = sci.cart_id
+JOIN 
+    InventoryItems AS ii ON sci.inventory_item_id = ii.inventory_item_id
+JOIN 
+    Inventory AS i ON ii.inventory_id = i.inventory_id
+WHERE 
+    sc.cart_id = $1;
+
+-- name: CreateQuotation :one
+INSERT INTO QuotationRequest (total_cost, delivery_frequency, destination, special_handling, insurance, include_insurance, is_refused, cart_id) 
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+RETURNING *;
+
+-- name: GetQuotationByID :one
+SELECT * FROM QuotationRequest
+WHERE quotation_id = $1 LIMIT 1;
+=======
+AND sci.cart_id = $1 RETURNING *;
+>>>>>>> main
