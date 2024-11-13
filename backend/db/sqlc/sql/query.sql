@@ -67,7 +67,6 @@ UPDATE InventoryItems AS ii
 SET reserved = 0
 FROM ShoppingCartItems AS sci
 WHERE ii.inventory_item_id = sci.inventory_item_id
-<<<<<<< HEAD
 AND sci.cart_id = $1 RETURNING *;
 
 -- name: GetShoppingCartItemsWithPrice :many
@@ -95,6 +94,3 @@ RETURNING *;
 -- name: GetQuotationByID :one
 SELECT * FROM QuotationRequest
 WHERE quotation_id = $1 LIMIT 1;
-=======
-AND sci.cart_id = $1 RETURNING *;
->>>>>>> main
