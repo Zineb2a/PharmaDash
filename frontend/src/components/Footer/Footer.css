@@ -119,3 +119,18 @@
         text-align: center;
     }
 }
+/* Chatbot Toggle Button */
+.chatbot-toggle-btn {
+    border: none;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  
+  .chatbot-toggle-btn:hover {
+    background-color: #0056b3;
+  }
+  
