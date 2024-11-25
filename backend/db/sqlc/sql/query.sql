@@ -104,3 +104,90 @@ RETURNING order_id, account_id, quotation_id, order_status, created_at;
 INSERT INTO OrderItems (order_id, inventory_item_id, quantity) 
 VALUES ($1, $2, $3) 
 RETURNING order_item_id, order_id, inventory_item_id, quantity;
+
+-- name: GetAvailableOrders :many
+SELECT 
+    order_id,
+    account_id,
+    quotation_id,
+    order_status,
+    created_at
+FROM 
+    Orders o
+WHERE 
+    NOT EXISTS (
+        SELECT 1
+        FROM driver_orders d
+        WHERE d.order_id = o.order_id
+    )
+    AND order_status = 'Pending';  -- Order is still in a pending state
+
+
+-- name: AssignOrderToDriver :one
+BEGIN;
+
+-- Insert into driver_orders table to assign the order to the driver
+INSERT INTO driver_orders (driver_id, order_id)
+VALUES ($1, $2)
+ON CONFLICT (driver_id, order_id) DO NOTHING;  -- Avoid duplicate entries if the order is already assigned
+
+-- Update the order status to 'Out for Delivery'
+UPDATE Orders
+SET 
+    order_status = 'Out for Delivery'
+WHERE 
+    order_id = $2
+    AND order_status = 'Pending';  -- Ensure the order is still pending before assigning
+
+COMMIT;
+
+
+-- name: CreateDriver :one
+INSERT INTO drivers (name, email, phone_number)
+VALUES ($1, $2, $3)
+RETURNING driver_id, name, email, phone_number;
+
+
+-- name: GetOrdersByDriver :many
+SELECT 
+    o.order_id,
+    o.account_id,
+    o.quotation_id,
+    o.order_status,
+    o.created_at
+FROM 
+    Orders o
+JOIN 
+    driver_orders d ON o.order_id = d.order_id
+WHERE 
+    d.driver_id = $1;  -- Driver ID
+
+
+-- name: MarkOrderAsDelivered :one
+UPDATE Orders
+SET 
+    order_status = 'Delivered'
+WHERE 
+    order_id = $1
+    AND order_status = 'Out for Delivery'  -- Ensure the order is out for delivery before marking as delivered
+RETURNING order_id, order_status;  -- Returning the order_id and order_status
+
+-- name: GetDriverByEmail :one
+SELECT 
+    driver_id, 
+    name, 
+    email, 
+    phone_number,
+    password
+FROM 
+    drivers
+WHERE 
+    email = $1
+LIMIT 1;
+
+-- name: GetEmailFromOrder :one
+SELECT a.email 
+FROM Orders o
+JOIN Accounts a ON o.account_id = a.account_id
+WHERE o.order_id = $1
+LIMIT 1;

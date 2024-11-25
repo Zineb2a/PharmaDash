@@ -32,3 +32,11 @@ type OrderRequest struct {
 	ExpiryDate string
 	CVV        string
 }
+
+type PickUpOrderRequest struct {
+	OrderID int32 `json:"order_id" binding:"required"`
+}
+
+type ConfirmDeliveryRequest struct {
+	OrderID int32 `json:"order_id" binding:"required"`
+}

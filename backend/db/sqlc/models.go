@@ -19,6 +19,19 @@ type Account struct {
 	Authlevel   string
 }
 
+type Driver struct {
+	DriverID    int32
+	Name        string
+	PhoneNumber pgtype.Text
+	Email       pgtype.Text
+	Password    string
+}
+
+type DriverOrder struct {
+	DriverID int32
+	OrderID  int32
+}
+
 type Inventory struct {
 	InventoryID     int32
 	PharmacyID      int32

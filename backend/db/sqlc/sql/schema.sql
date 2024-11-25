@@ -91,3 +91,18 @@ CREATE TABLE IF NOT EXISTS OrderItems (
     FOREIGN KEY (order_id) REFERENCES Orders(order_id),
     FOREIGN KEY (inventory_item_id) REFERENCES InventoryItems(inventory_item_id)
 );
+
+CREATE TABLE IF NOT EXISTS Drivers (
+  driver_id SERIAL PRIMARY KEY,
+  name varchar(50) NOT NULL,
+  phone_number varchar(100) NULL,
+  email varchar(50) UNIQUE NULL,
+  password varchar(100) NOT NULL
+);
+
+-- to track driver-order(s) association, allows the driver to be associated to many orders without modifying the existing order table
+CREATE TABLE driver_orders (
+    driver_id INT NOT NULL REFERENCES drivers(driver_id),
+    order_id INT NOT NULL REFERENCES orders(order_id),
+    PRIMARY KEY (driver_id, order_id)
+);

@@ -11,6 +11,54 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const assignOrderToDriver = `-- name: AssignOrderToDriver :one
+
+
+BEGIN
+`
+
+type AssignOrderToDriverRow struct {
+}
+
+// Order is still in a pending state
+func (q *Queries) AssignOrderToDriver(ctx context.Context) (AssignOrderToDriverRow, error) {
+	row := q.db.QueryRow(ctx, assignOrderToDriver)
+	var i AssignOrderToDriverRow
+	err := row.Scan()
+	return i, err
+}
+
+const createDriver = `-- name: CreateDriver :one
+INSERT INTO drivers (name, email, phone_number)
+VALUES ($1, $2, $3)
+RETURNING driver_id, name, email, phone_number
+`
+
+type CreateDriverParams struct {
+	Name        string
+	Email       pgtype.Text
+	PhoneNumber pgtype.Text
+}
+
+type CreateDriverRow struct {
+	DriverID    int32
+	Name        string
+	Email       pgtype.Text
+	PhoneNumber pgtype.Text
+}
+
+func (q *Queries) CreateDriver(ctx context.Context, arg CreateDriverParams) (CreateDriverRow, error) {
+	row := q.db.QueryRow(ctx, createDriver, arg.Name, arg.Email, arg.PhoneNumber)
+	var i CreateDriverRow
+	err := row.Scan(
+		&i.DriverID,
+		&i.Name,
+		&i.Email,
+		&i.PhoneNumber,
+	)
+	return i, err
+}
+
 const createOrder = `-- name: CreateOrder :one
 INSERT INTO Orders (account_id, quotation_id) 
 VALUES ($1, $2) 
@@ -346,6 +394,102 @@ func (q *Queries) GetAvailableInventoryItem(ctx context.Context, inventoryItemID
 	return i, err
 }
 
+const getAvailableOrders = `-- name: GetAvailableOrders :many
+SELECT 
+    order_id,
+    account_id,
+    quotation_id,
+    order_status,
+    created_at
+FROM 
+    Orders o
+WHERE 
+    NOT EXISTS (
+        SELECT 1
+        FROM driver_orders d
+        WHERE d.order_id = o.order_id
+    )
+    AND order_status = 'Pending'
+`
+
+func (q *Queries) GetAvailableOrders(ctx context.Context) ([]Order, error) {
+	rows, err := q.db.Query(ctx, getAvailableOrders)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Order
+	for rows.Next() {
+		var i Order
+		if err := rows.Scan(
+			&i.OrderID,
+			&i.AccountID,
+			&i.QuotationID,
+			&i.OrderStatus,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getDriverByEmail = `-- name: GetDriverByEmail :one
+
+SELECT 
+    driver_id, 
+    name, 
+    email, 
+    phone_number,
+    password
+FROM 
+    drivers
+WHERE 
+    email = $1
+LIMIT 1
+`
+
+type GetDriverByEmailRow struct {
+	DriverID    int32
+	Name        string
+	Email       pgtype.Text
+	PhoneNumber pgtype.Text
+	Password    string
+}
+
+// Returning the order_id and order_status
+func (q *Queries) GetDriverByEmail(ctx context.Context, email pgtype.Text) (GetDriverByEmailRow, error) {
+	row := q.db.QueryRow(ctx, getDriverByEmail, email)
+	var i GetDriverByEmailRow
+	err := row.Scan(
+		&i.DriverID,
+		&i.Name,
+		&i.Email,
+		&i.PhoneNumber,
+		&i.Password,
+	)
+	return i, err
+}
+
+const getEmailFromOrder = `-- name: GetEmailFromOrder :one
+SELECT a.email 
+FROM Orders o
+JOIN Accounts a ON o.account_id = a.account_id
+WHERE o.order_id = $1
+LIMIT 1
+`
+
+func (q *Queries) GetEmailFromOrder(ctx context.Context, orderID int32) (pgtype.Text, error) {
+	row := q.db.QueryRow(ctx, getEmailFromOrder, orderID)
+	var email pgtype.Text
+	err := row.Scan(&email)
+	return email, err
+}
+
 const getInventoryItemByID = `-- name: GetInventoryItemByID :one
 SELECT inventory_item_id, inventory_id, reserved FROM InventoryItems
 WHERE inventory_item_id = $1 LIMIT 1
@@ -356,6 +500,47 @@ func (q *Queries) GetInventoryItemByID(ctx context.Context, inventoryItemID int3
 	var i Inventoryitem
 	err := row.Scan(&i.InventoryItemID, &i.InventoryID, &i.Reserved)
 	return i, err
+}
+
+const getOrdersByDriver = `-- name: GetOrdersByDriver :many
+SELECT 
+    o.order_id,
+    o.account_id,
+    o.quotation_id,
+    o.order_status,
+    o.created_at
+FROM 
+    Orders o
+JOIN 
+    driver_orders d ON o.order_id = d.order_id
+WHERE 
+    d.driver_id = $1
+`
+
+func (q *Queries) GetOrdersByDriver(ctx context.Context, driverID int32) ([]Order, error) {
+	rows, err := q.db.Query(ctx, getOrdersByDriver, driverID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Order
+	for rows.Next() {
+		var i Order
+		if err := rows.Scan(
+			&i.OrderID,
+			&i.AccountID,
+			&i.QuotationID,
+			&i.OrderStatus,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getQuotationByID = `-- name: GetQuotationByID :one
@@ -486,6 +671,31 @@ func (q *Queries) IncrementInventoryStock(ctx context.Context, arg IncrementInve
 		&i.StockQuantity,
 		&i.Otc,
 	)
+	return i, err
+}
+
+const markOrderAsDelivered = `-- name: MarkOrderAsDelivered :one
+
+
+UPDATE Orders
+SET 
+    order_status = 'Delivered'
+WHERE 
+    order_id = $1
+    AND order_status = 'Out for Delivery'  -- Ensure the order is out for delivery before marking as delivered
+RETURNING order_id, order_status
+`
+
+type MarkOrderAsDeliveredRow struct {
+	OrderID     int32
+	OrderStatus pgtype.Text
+}
+
+// Driver ID
+func (q *Queries) MarkOrderAsDelivered(ctx context.Context, orderID int32) (MarkOrderAsDeliveredRow, error) {
+	row := q.db.QueryRow(ctx, markOrderAsDelivered, orderID)
+	var i MarkOrderAsDeliveredRow
+	err := row.Scan(&i.OrderID, &i.OrderStatus)
 	return i, err
 }
 
