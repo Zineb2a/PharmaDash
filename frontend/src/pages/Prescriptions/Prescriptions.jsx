@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import LeaveAReview from "../../components/LeaveAReview/LeaveAReview";
 import "./Prescriptions.css";
 
 const Prescription = () => {
