@@ -125,7 +125,7 @@ func (server *Server) Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "Authentication failed."})
 		return
 	} else {
-		token, err := server.maker.CreateToken(payload.Email, time.Hour)
+		token, err := server.maker.CreateToken(payload.Email, dbUser.Authlevel, time.Hour)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"status": "Authentication failed due to internal error."})
 			return
