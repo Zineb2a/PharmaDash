@@ -10,10 +10,17 @@
 }
 
 /* Logo */
+/* Logo */
 .logo {
-    width: 180px;
+    width: 180px; /* Width of the logo */
+    height: 180px; /* Set height equal to width for a circular shape */
     margin-bottom: 20px;
+    border-radius: 50%; /* Make the logo circular */
+    object-fit: cover; /* Ensure the image fits within the circle without distortion */
+    border: 3px solid #fff; /* Optional: Add a border for a polished look */
+    background-color: #fff; /* Optional: Fallback color in case the image doesn't load */
 }
+
 
 /* Footer Content */
 .footer-content {
