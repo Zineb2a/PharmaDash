@@ -188,3 +188,16 @@ position: relative;
     transform: scale(1.1);
   }
   
+  .navbar-menu a {
+    text-decoration: none;
+    color: #555;
+    font-weight: 500;
+    transition: color 0.3s ease;
+    padding: 0.5rem;
+  }
+  
+  .navbar-menu .active {
+    color: #e74c3c; /* Highlight the active link */
+    border-bottom: 2px solid #e74c3c; /* Add underline for active link */
+  }
+  

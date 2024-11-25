@@ -13,6 +13,7 @@ import Verify from './pages/Verify/Verify';
 import PrivacyPolicy from './components/PrivacyPolicy/PrivacyPolicy';
 import AboutUs from './components/AboutUs/AboutUs';
 import ChatbotPage from './pages/Chatbot/ChatbotPage';
+import OTCPage from './pages/OTCPage/OTCPage';
 
 
 const App = () => {
@@ -33,7 +34,7 @@ const App = () => {
           <Route path='/verify' element={<Verify />}/>
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/about-us" element={<AboutUs />} />
-      
+          <Route path="/otc" element={<OTCPage />} />
           <Route path="/chatbot" element={<ChatbotPage />} /> 
         </Routes>
       </div>

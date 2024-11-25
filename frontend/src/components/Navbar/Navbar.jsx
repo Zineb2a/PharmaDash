@@ -1,16 +1,24 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import './Navbar.css';
 import { assets } from '../../assets/assets';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { StoreContext } from '../../Context/StoreContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeadset } from '@fortawesome/free-solid-svg-icons';
 
-
 const Navbar = ({ setShowLogin }) => {
-  const [menu, setMenu] = useState("home");
   const { getTotalCartAmount, token, setToken } = useContext(StoreContext);
   const navigate = useNavigate();
+  const location = useLocation(); // Get the current route
+
+  const [menu, setMenu] = useState("home");
+
+  useEffect(() => {
+    // Update the active menu based on the current route
+    if (location.pathname === '/otc') setMenu("menu");
+    else if (location.pathname === '/') setMenu("home");
+    else setMenu("");
+  }, [location]);
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -22,10 +30,34 @@ const Navbar = ({ setShowLogin }) => {
     <div className='navbar'>
       <Link to='/'><img className='logo' src={assets.logo2} alt="logo" /></Link>
       <ul className="navbar-menu">
-        <Link to="/" onClick={() => setMenu("home")} className={`${menu === "home" ? "active" : ""}`}>Home</Link>
-        <a href='#explore-menu' onClick={() => setMenu("menu")} className={`${menu === "menu" ? "active" : ""}`}>OTC's</a>
-        <a href='#Prescriptions' onClick={() => setMenu("Prescriptions")} className={`${menu === "Prescription" ? "active" : ""}`}>Prescriptions</a>
-        <a href='#footer' onClick={() => setMenu("contact")} className={`${menu === "contact" ? "active" : ""}`}>Contact Us</a>
+        <Link
+          to="/"
+          onClick={() => setMenu("home")}
+          className={`${menu === "home" ? "active" : ""}`}
+        >
+          Home
+        </Link>
+        <Link
+          to="/otc"
+          onClick={() => setMenu("menu")}
+          className={`${menu === "menu" ? "active" : ""}`}
+        >
+          OTC's
+        </Link>
+        <a
+          href='#Prescriptions'
+          onClick={() => setMenu("Prescriptions")}
+          className={`${menu === "Prescriptions" ? "active" : ""}`}
+        >
+          Prescriptions
+        </a>
+        <a
+          href='#footer'
+          onClick={() => setMenu("contact")}
+          className={`${menu === "contact" ? "active" : ""}`}
+        >
+          Contact Us
+        </a>
       </ul>
       <div className="navbar-right">
         {/* Customer Service Icon */}
@@ -39,16 +71,22 @@ const Navbar = ({ setShowLogin }) => {
           <div className={getTotalCartAmount() > 0 ? "dot" : ""}></div>
         </Link>
 
-        {!token ? <button onClick={() => setShowLogin(true)}>Sign In</button>
-          : <div className='navbar-profile'>
+        {!token ? (
+          <button onClick={() => setShowLogin(true)}>Sign In</button>
+        ) : (
+          <div className='navbar-profile'>
             <img src={assets.profile_icon} alt="Profile Icon" />
             <ul className='navbar-profile-dropdown'>
-              <li onClick={() => navigate('/myorders')}> <img src={assets.bag_icon} alt="" /> <p>Orders</p></li>
+              <li onClick={() => navigate('/myorders')}>
+                <img src={assets.bag_icon} alt="Orders" /> <p>Orders</p>
+              </li>
               <hr />
-              <li onClick={logout}> <img src={assets.logout_icon} alt="" /> <p>Logout</p></li>
+              <li onClick={logout}>
+                <img src={assets.logout_icon} alt="Logout" /> <p>Logout</p>
+              </li>
             </ul>
           </div>
-        }
+        )}
       </div>
     </div>
   );
