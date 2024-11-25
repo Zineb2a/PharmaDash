@@ -120,7 +120,7 @@ WHERE
         FROM driver_orders d
         WHERE d.order_id = o.order_id
     )
-    AND order_status = 'Pending';  -- Order is still in a pending state
+    AND order_status = 'Created';  -- Order is still in a pending state
 
 
 -- name: AssignOrderToDriver :one
@@ -137,7 +137,7 @@ SET
     order_status = 'Out for Delivery'
 WHERE 
     order_id = $2
-    AND order_status = 'Pending';  -- Ensure the order is still pending before assigning
+    AND order_status = 'Created';  -- Ensure the order is still pending before assigning
 
 COMMIT;
 

@@ -409,7 +409,7 @@ WHERE
         FROM driver_orders d
         WHERE d.order_id = o.order_id
     )
-    AND order_status = 'Pending'
+    AND order_status = 'Created'
 `
 
 func (q *Queries) GetAvailableOrders(ctx context.Context) ([]Order, error) {
