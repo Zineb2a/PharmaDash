@@ -25,3 +25,18 @@ type RemoveItemFromCartRequest struct {
 type DeleteCartRequest struct {
 	CartID int32
 }
+
+type OrderRequest struct {
+	CartID     int32
+	CardNumber string
+	ExpiryDate string
+	CVV        string
+}
+
+type PickUpOrderRequest struct {
+	OrderID int32 `json:"order_id" binding:"required"`
+}
+
+type ConfirmDeliveryRequest struct {
+	OrderID int32 `json:"order_id" binding:"required"`
+}

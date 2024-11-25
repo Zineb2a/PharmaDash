@@ -95,10 +95,6 @@ func (server *Server) CreateDeliveryQuotation(c *gin.Context) {
 
 	totalCost += deliveryFee
 
-	// var pgBool pgtype.Bool
-	// pgBool.Bool = req.IncludeInsurance  // Assign the boolean value directly
-	// pgBool.Valid = true                 // Mark as valid (or set to false if NULL)
-
 	bigIntInsurance := new(big.Int)
 	bigIntInsurance.SetInt64(int64(insuranceCost * 100)) // Convert to cents to avoid float precision issues
 

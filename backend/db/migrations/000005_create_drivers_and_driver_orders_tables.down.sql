@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS Drivers;
+DROP TABLE IF EXISTS Driver_orders;
