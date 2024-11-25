@@ -143,7 +143,7 @@ COMMIT;
 
 
 -- name: CreateDriver :one
-INSERT INTO drivers (name, email, phone_number)
+INSERT INTO Drivers (name, email, phone_number)
 VALUES ($1, $2, $3)
 RETURNING driver_id, name, email, phone_number;
 
@@ -158,7 +158,7 @@ SELECT
 FROM 
     Orders o
 JOIN 
-    driver_orders d ON o.order_id = d.order_id
+    Driver_orders d ON o.order_id = d.order_id
 WHERE 
     d.driver_id = $1;  -- Driver ID
 

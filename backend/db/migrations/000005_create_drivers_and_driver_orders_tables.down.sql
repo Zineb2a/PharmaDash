@@ -1,2 +1,2 @@
-DROP TABLE IF EXISTS drivers;
-DROP TABLE IF EXISTS driver_orders;
+DROP TABLE IF EXISTS Drivers;
+DROP TABLE IF EXISTS Driver_orders;

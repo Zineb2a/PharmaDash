@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS Drivers (
 );
 
 -- to track driver-order(s) association, allows the driver to be associated to many orders without modifying the existing order table
-CREATE TABLE driver_orders (
+CREATE TABLE Driver_orders (
     driver_id INT NOT NULL REFERENCES drivers(driver_id),
     order_id INT NOT NULL REFERENCES orders(order_id),
     PRIMARY KEY (driver_id, order_id)
