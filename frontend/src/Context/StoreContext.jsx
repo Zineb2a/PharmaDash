@@ -54,7 +54,7 @@ const StoreContextProvider = (props) => {
                 category: 'Pain Relievers',
                 description: 'Used to relieve pain and reduce inflammation.',
                 price: 8.99,
-                image: 'https://via.placeholder.com/150',
+                image: 'https://i-cf65.ch-static.com/content/dam/cf-consumer-healthcare/bp-advil-v2/en_US/products/product-01/advil-new-easy-open-cap-product-liqui-gel.png?auto=format',
             },
             {
                 _id: '2',

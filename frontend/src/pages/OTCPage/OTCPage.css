@@ -1,0 +1,22 @@
+.otc-page {
+    padding: 2rem;
+    background-color: #ffffff;
+    min-height: 100vh; /* Ensure full-page height */
+  }
+  
+  .otc-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  
+  .otc-header h1 {
+    font-size: 2.5rem;
+    color: #e74c3c;
+  }
+  
+  .otc-header p {
+    color: #666;
+    font-size: 1.2rem;
+    line-height: 1.5;
+  }
+  

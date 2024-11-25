@@ -7,11 +7,15 @@ import Cart from './pages/Cart/Cart'
 import LoginPopup from './components/LoginPopup/LoginPopup'
 import PlaceOrder from './pages/PlaceOrder/PlaceOrder'
 import MyOrders from './pages/MyOrders/MyOrders'
+import Prescription from './pages/Prescriptions/Prescriptions';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Verify from './pages/Verify/Verify';
 import PrivacyPolicy from './components/PrivacyPolicy/PrivacyPolicy';
 import AboutUs from './components/AboutUs/AboutUs';
+import ChatbotPage from './pages/Chatbot/ChatbotPage';
+import OTCPage from './pages/OTCPage/OTCPage';
+
 
 const App = () => {
 
@@ -31,6 +35,9 @@ const App = () => {
           <Route path='/verify' element={<Verify />}/>
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/about-us" element={<AboutUs />} />
+          <Route path="/otc" element={<OTCPage />} />
+          <Route path="/prescriptions" element={<Prescription />} />
+          <Route path="/chatbot" element={<ChatbotPage />} /> 
         </Routes>
       </div>
       <Footer />

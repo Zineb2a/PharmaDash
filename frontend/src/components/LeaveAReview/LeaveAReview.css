@@ -1,0 +1,83 @@
+/* LeaveAReview.css */
+.leave-a-review {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .review-button {
+    padding: 10px 20px;
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .review-button:hover {
+    background-color: #b63426;
+  }
+  
+  .popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .popup-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    text-align: center;
+  }
+  
+  .stars {
+    font-size: 30px;
+    margin-bottom: 10px;
+    cursor: pointer;
+  }
+  
+  .star {
+    color: #ccc;
+    transition: color 0.2s;
+  }
+  
+  .star.filled {
+    color: #f39c12;
+  }
+  
+  textarea {
+    width: 100%;
+    height: 80px;
+    padding: 10px;
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+  }
+  
+  .popup-actions {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .popup-actions button {
+    padding: 8px 15px;
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .popup-actions button:hover {
+    background-color: #b63426;
+  }
+  

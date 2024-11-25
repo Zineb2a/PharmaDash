@@ -1,5 +1,5 @@
 import basket_icon from './basket_icon.png'
-import logo from './logo.png'
+
 import logo2 from './logo2.png'
 import header_img from './header_img.png'
 import search_icon from './search_icon.png'
@@ -67,7 +67,7 @@ import checked from './checked.png'
 import un_checked from './un_checked.png'
 
 export const assets = {
-    logo,
+ 
     logo2,
     translogo,
     basket_icon,
