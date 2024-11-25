@@ -1,0 +1,23 @@
+.chatbot-page-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  
+  .chatbot-page-header {
+    margin-bottom: 20px;
+  }
+  
+  .chatbot-page-header h1 {
+    color: #e74c3c;
+    font-size: 2rem;
+    margin-bottom: 10px;
+  }
+  
+  .chatbot-page-header p {
+    color: #666;
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+  }
+  

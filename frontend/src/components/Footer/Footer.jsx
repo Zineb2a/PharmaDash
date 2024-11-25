@@ -2,14 +2,12 @@ import React, { useState } from 'react';
 import './Footer.css';
 import { assets } from '../../assets/assets';
 import { Link } from 'react-router-dom';
-import Chatbot from '../Chatbot/Chatbot';
 
 const Footer = () => {
-  const [showChatbot, setShowChatbot] = useState(false);
-
   return (
     <div className="footer" id="footer">
       <div className="footer-content">
+        {/* Left Section */}
         <div className="footer-content-left">
           <img className="logo" src={assets.logo2} alt="Pharmadash Logo" />
           <p className="footer-description">
@@ -26,6 +24,7 @@ const Footer = () => {
           </div>
         </div>
 
+        {/* Center Section */}
         <div className="footer-content-center">
           <h2>Company</h2>
           <ul>
@@ -41,6 +40,7 @@ const Footer = () => {
           </ul>
         </div>
 
+        {/* Right Section */}
         <div className="footer-content-right">
           <h2>Customer Service</h2>
           <ul>
@@ -48,17 +48,15 @@ const Footer = () => {
             <li>
               <a href="mailto:contact@pharmadash.com">contact@pharmadash.com</a>
             </li>
-            
-             <li><Link to="/chatbot">Chat with us</Link></li> {/* Link to Chatbot */}
-            
+            <li>
+              <Link to="/chatbot">Chat with us</Link> {/* Link to Chatbot page */}
+            </li>
           </ul>
         </div>
       </div>
 
       <hr />
       <p className="footer-copyright">© 2024 Pharmadash.com - All Rights Reserved.</p>
-
-      {showChatbot && <Chatbot onClose={() => setShowChatbot(false)} />}
     </div>
   );
 };

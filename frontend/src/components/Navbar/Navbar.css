@@ -166,3 +166,25 @@ position: relative;
         display: none;
     }
 }
+.navbar-icon {
+    margin-right: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+  }
+  
+  .customer-service-icon {
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+    background-color: #e74c3c; /* Red background */
+    padding: 8px;
+    border-radius: 50%;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+  }
+  
+  .customer-service-icon:hover {
+    transform: scale(1.1);
+  }
+  

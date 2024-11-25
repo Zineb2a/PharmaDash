@@ -12,7 +12,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Verify from './pages/Verify/Verify';
 import PrivacyPolicy from './components/PrivacyPolicy/PrivacyPolicy';
 import AboutUs from './components/AboutUs/AboutUs';
-import Chatbot from "./components/Chatbot/Chatbot"; // Import Chatbot
+import ChatbotPage from './pages/Chatbot/ChatbotPage';
 
 
 const App = () => {
@@ -33,7 +33,8 @@ const App = () => {
           <Route path='/verify' element={<Verify />}/>
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/about-us" element={<AboutUs />} />
-          <Route path="/chatbot" element={<Chatbot />} /> 
+      
+          <Route path="/chatbot" element={<ChatbotPage />} /> 
         </Routes>
       </div>
       <Footer />

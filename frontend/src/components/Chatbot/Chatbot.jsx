@@ -5,7 +5,6 @@ import {
   Box,
   Button,
   TextField,
-  Typography,
   Stack,
   CircularProgress,
 } from '@mui/material';
@@ -13,19 +12,26 @@ import { Send } from '@mui/icons-material';
 
 const Chatbot = () => {
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: 'Welcome to Pharmadash Customer Service! ' },
+    { role: 'assistant', content: 'Welcome to Pharmadash Customer Service!' },
   ]);
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const scrollDown = () => {
+    if (messagesContainerRef.current) {
+      const { scrollTop, clientHeight } = messagesContainerRef.current;
+      const newScrollTop = scrollTop + clientHeight / 4; // Scroll down by a fraction of the height
+      messagesContainerRef.current.scrollTop = Math.min(
+        newScrollTop,
+        messagesContainerRef.current.scrollHeight - clientHeight // Ensure it doesn't scroll beyond the bottom
+      );
+    }
   };
 
   useEffect(() => {
-    scrollToBottom();
+    scrollDown();
   }, [messages]);
 
   const handleSendMessage = async () => {
@@ -71,7 +77,7 @@ const Chatbot = () => {
   return (
     <Box
       sx={{
-        height: '70vh', // Adjusted for default height
+        height: '75vh',
         width: '100%',
         maxWidth: '900px',
         margin: '20px auto',
@@ -80,9 +86,9 @@ const Chatbot = () => {
         backgroundColor: '#f9f9f9',
         borderRadius: '12px',
         boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+        overflow: 'hidden',
       }}
     >
-      {/* Header */}
       <Box
         sx={{
           padding: '20px',
@@ -97,7 +103,6 @@ const Chatbot = () => {
         Pharmadash Support
       </Box>
 
-      {/* Messages */}
       <Stack
         spacing={2}
         sx={{
@@ -106,6 +111,7 @@ const Chatbot = () => {
           padding: '20px',
           backgroundColor: '#fff',
         }}
+        ref={messagesContainerRef}
       >
         {messages.map((msg, idx) => (
           <Box
@@ -124,10 +130,8 @@ const Chatbot = () => {
             {msg.content}
           </Box>
         ))}
-        <div ref={messagesEndRef} />
       </Stack>
 
-      {/* Input Field */}
       <Box
         sx={{
           padding: '15px',
@@ -142,7 +146,7 @@ const Chatbot = () => {
           placeholder="Type your message..."
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={handleKeyPress} // Enable Enter-to-Send
+          onKeyDown={handleKeyPress}
           disabled={isLoading}
           multiline
           maxRows={3}
