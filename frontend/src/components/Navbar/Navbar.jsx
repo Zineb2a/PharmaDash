@@ -44,13 +44,13 @@ const Navbar = ({ setShowLogin }) => {
         >
           OTC's
         </Link>
-        <a
-          href='#Prescriptions'
-          onClick={() => setMenu("Prescriptions")}
-          className={`${menu === "Prescriptions" ? "active" : ""}`}
+        <Link
+          to="/prescriptions"
+          onClick={() => setMenu("menu")}
+          className={`${menu === "menu" ? "active" : ""}`}
         >
           Prescriptions
-        </a>
+        </Link>
         <a
           href='#footer'
           onClick={() => setMenu("contact")}
