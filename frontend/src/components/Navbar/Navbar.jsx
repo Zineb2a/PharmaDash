@@ -1,7 +1,7 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState } from 'react';
 import './Navbar.css';
 import { assets } from '../../assets/assets';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { StoreContext } from '../../Context/StoreContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeadset } from '@fortawesome/free-solid-svg-icons';
@@ -9,17 +9,7 @@ import { faHeadset } from '@fortawesome/free-solid-svg-icons';
 const Navbar = ({ setShowLogin }) => {
   const { getTotalCartAmount, token, setToken } = useContext(StoreContext);
   const navigate = useNavigate();
-  const location = useLocation(); // Get the current route
-
   const [menu, setMenu] = useState("home");
-
-  useEffect(() => {
-    // Update the active menu based on the current route
-    if (location.pathname === '/otc') setMenu("otc");
-    else if (location.pathname === '/prescriptions') setMenu("prescriptions");
-    else if (location.pathname === '/') setMenu("home");
-    else setMenu(""); // Reset if the path doesn't match
-  }, [location]);
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -28,8 +18,13 @@ const Navbar = ({ setShowLogin }) => {
   };
 
   return (
-    <div className='navbar'>
-      <Link to='/'><img className='logo' src={assets.logo2} alt="logo" /></Link>
+    <div className="navbar">
+      {/* Logo */}
+      <Link to='/'>
+        <img className='logo' src={assets.logo2} alt="Pharmadash Logo" />
+      </Link>
+
+      {/* Menu Links */}
       <ul className="navbar-menu">
         <Link
           to="/"
@@ -52,14 +47,16 @@ const Navbar = ({ setShowLogin }) => {
         >
           Prescriptions
         </Link>
-        <a
-          href='#footer'
-          onClick={() => setMenu("contact")}
-          className={`${menu === "contact" ? "active" : ""}`}
+        <Link
+          to="/contact-us"
+          onClick={() => setMenu("contact-us")}
+          className={`${menu === "contact-us" ? "active" : ""}`}
         >
           Contact Us
-        </a>
+        </Link>
       </ul>
+
+      {/* Right Section */}
       <div className="navbar-right">
         {/* Customer Service Icon */}
         <Link to='/chatbot' className="navbar-icon customer-service-icon" title="Customer Service">
@@ -72,6 +69,7 @@ const Navbar = ({ setShowLogin }) => {
           <div className={getTotalCartAmount() > 0 ? "dot" : ""}></div>
         </Link>
 
+        {/* Login/Logout */}
         {!token ? (
           <button onClick={() => setShowLogin(true)}>Sign In</button>
         ) : (

@@ -15,6 +15,7 @@ import PrivacyPolicy from './components/PrivacyPolicy/PrivacyPolicy';
 import AboutUs from './components/AboutUs/AboutUs';
 import ChatbotPage from './pages/Chatbot/ChatbotPage';
 import OTCPage from './pages/OTCPage/OTCPage';
+import ContactUs from './pages/ContactUs/ContactUs';
 
 
 const App = () => {
@@ -38,6 +39,7 @@ const App = () => {
           <Route path="/otc" element={<OTCPage />} />
           <Route path="/prescriptions" element={<Prescription />} />
           <Route path="/chatbot" element={<ChatbotPage />} /> 
+          <Route path="/contact-us" element={<ContactUs />} />
         </Routes>
       </div>
       <Footer />
