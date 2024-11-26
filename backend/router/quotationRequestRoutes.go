@@ -95,10 +95,6 @@ func (server *Server) CreateDeliveryQuotation(c *gin.Context) {
 
 	totalCost += deliveryFee
 
-	// var pgBool pgtype.Bool
-	// pgBool.Bool = req.IncludeInsurance  // Assign the boolean value directly
-	// pgBool.Valid = true                 // Mark as valid (or set to false if NULL)
-
 	bigIntInsurance := new(big.Int)
 	bigIntInsurance.SetInt64(int64(insuranceCost * 100)) // Convert to cents to avoid float precision issues
 
@@ -121,8 +117,8 @@ func (server *Server) CreateDeliveryQuotation(c *gin.Context) {
 
 	createQuotationParams := db.CreateQuotationParams{
 		TotalCost:         pgNumericInsurance2,
-		DeliveryFrequency: req.DeliveryFrequency,
-		Destination:       req.Destination,
+		DeliveryFrequency: pgtype.Text{String: req.DeliveryFrequency},
+		Destination:       pgtype.Text{String: req.Destination},
 		SpecialHandling:   req.SpecialHandling,
 		Insurance:         pgNumericInsurance,
 		IncludeInsurance:  pgtype.Bool{Bool: true, Valid: true},
@@ -180,4 +176,33 @@ func (server *Server) RefuseQuotation(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "Quotation refused, returning to previous options."})
+}
+
+func (server *Server) DeleteQuotation(c *gin.Context) {
+	var req struct {
+		QuotationID int32 `json:"quotation_id" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "Invalid request"})
+		return
+	}
+
+	ctx := context.Background()
+	conn, err := server.pool.Acquire(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Server error"})
+		return
+	}
+	defer conn.Release()
+	query := db.New(conn)
+
+	// Execute delete query
+	err = query.DeleteQuotation(ctx, req.QuotationID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to delete quotation"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "Quotation deleted successfully"})
 }

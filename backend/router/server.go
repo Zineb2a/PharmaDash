@@ -57,7 +57,17 @@ func GetNewServer() (*Server, error) {
 			cart.POST("/delivery_quotation", server.mustAuthChecker, server.CreateDeliveryQuotation)
 			cart.POST("/delivery_quotation/accept", server.mustAuthChecker, server.AcceptQuotation)
 			cart.POST("/delivery_quotation/refuse", server.mustAuthChecker, server.RefuseQuotation)
+			cart.POST("/delete_quotation", server.mustAuthChecker, server.DeleteQuotation)
 
+		}
+		order := router.Group("/order")
+		{
+			order.POST("/create_order", server.CreateOrder)
+			order.GET("/get_orders", server.mustAuthChecker, server.GetAllOrders)
+		}
+		feedback := router.Group("/feedback")
+		{
+			feedback.POST("/feedback", server.mustAuthChecker, server.AddFeedback)
 		}
 	}
 	return server, nil
