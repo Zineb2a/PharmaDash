@@ -15,9 +15,10 @@ const Navbar = ({ setShowLogin }) => {
 
   useEffect(() => {
     // Update the active menu based on the current route
-    if (location.pathname === '/otc') setMenu("menu");
+    if (location.pathname === '/otc') setMenu("otc");
+    else if (location.pathname === '/prescriptions') setMenu("prescriptions");
     else if (location.pathname === '/') setMenu("home");
-    else setMenu("");
+    else setMenu(""); // Reset if the path doesn't match
   }, [location]);
 
   const logout = () => {
@@ -39,15 +40,15 @@ const Navbar = ({ setShowLogin }) => {
         </Link>
         <Link
           to="/otc"
-          onClick={() => setMenu("menu")}
-          className={`${menu === "menu" ? "active" : ""}`}
+          onClick={() => setMenu("otc")}
+          className={`${menu === "otc" ? "active" : ""}`}
         >
           OTC's
         </Link>
         <Link
           to="/prescriptions"
-          onClick={() => setMenu("menu")}
-          className={`${menu === "menu" ? "active" : ""}`}
+          onClick={() => setMenu("prescriptions")}
+          className={`${menu === "prescriptions" ? "active" : ""}`}
         >
           Prescriptions
         </Link>
