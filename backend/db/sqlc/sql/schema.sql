@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS ShoppingCartItems (
   FOREIGN KEY (inventory_item_id) REFERENCES InventoryItems(inventory_item_id)
 );
 
-CREATE TABLE IF NOT EXISTS QuotationRequest (
+CREATE TABLE IF NOT EXISTS QuotationRequests (
     quotation_id SERIAL PRIMARY KEY,
     total_cost NUMERIC,
     delivery_frequency TEXT,
@@ -68,10 +68,10 @@ CREATE TABLE IF NOT EXISTS QuotationRequest (
     special_handling TEXT,
     insurance NUMERIC,
     include_insurance BOOLEAN,
-    is_refused BOOLEAN,
-    cart_id INT,
+    cart_id INTEGER,
     FOREIGN KEY (cart_id) REFERENCES ShoppingCart(cart_id)
 );
+
 
 CREATE TABLE IF NOT EXISTS Orders (
     order_id SERIAL PRIMARY KEY,
@@ -83,6 +83,13 @@ CREATE TABLE IF NOT EXISTS Orders (
     FOREIGN KEY (quotation_id) REFERENCES QuotationRequest(quotation_id)
 );
 
+ALTER TABLE Orders
+ADD COLUMN driver_id INT NULL, -- The account ID of the driver assigned to the order
+ADD CONSTRAINT fk_driver FOREIGN KEY (driver_id) REFERENCES Accounts(account_id);
+
+ALTER TABLE Orders
+    ALTER COLUMN driver_id SET DATA TYPE UUID USING driver_id::UUID;
+
 CREATE TABLE IF NOT EXISTS OrderItems (
     order_item_id SERIAL PRIMARY KEY,
     order_id INT NOT NULL,
@@ -90,23 +97,4 @@ CREATE TABLE IF NOT EXISTS OrderItems (
     quantity INT DEFAULT 1,
     FOREIGN KEY (order_id) REFERENCES Orders(order_id),
     FOREIGN KEY (inventory_item_id) REFERENCES InventoryItems(inventory_item_id)
-);
-
-
-
-
---to delete
-CREATE TABLE IF NOT EXISTS Drivers (
-  driver_id SERIAL PRIMARY KEY,
-  name varchar(50) NOT NULL,
-  phone_number varchar(100) NULL,
-  email varchar(50) UNIQUE NULL,
-  password varchar(100) NOT NULL
-);
-
--- to track driver-order(s) association, allows the driver to be associated to many orders without modifying the existing order table
-CREATE TABLE Driver_orders (
-    driver_id INT NOT NULL REFERENCES drivers(driver_id),
-    order_id INT NOT NULL REFERENCES orders(order_id),
-    PRIMARY KEY (driver_id, order_id)
 );

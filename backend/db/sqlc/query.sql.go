@@ -11,52 +11,20 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const assignOrderToDriver = `-- name: AssignOrderToDriver :one
-
-
-BEGIN
+const assignOrderToDriver = `-- name: AssignOrderToDriver :exec
+UPDATE Orders
+SET driver_id = $1, order_status = 'Out for delivery' -- The account ID of the driver
+WHERE order_id = $2 AND driver_id IS NULL
 `
 
-type AssignOrderToDriverRow struct {
+type AssignOrderToDriverParams struct {
+	DriverID pgtype.UUID
+	OrderID  int32
 }
 
-// Order is still in a pending state
-func (q *Queries) AssignOrderToDriver(ctx context.Context) (AssignOrderToDriverRow, error) {
-	row := q.db.QueryRow(ctx, assignOrderToDriver)
-	var i AssignOrderToDriverRow
-	err := row.Scan()
-	return i, err
-}
-
-const createDriver = `-- name: CreateDriver :one
-INSERT INTO Drivers (name, email, phone_number)
-VALUES ($1, $2, $3)
-RETURNING driver_id, name, email, phone_number
-`
-
-type CreateDriverParams struct {
-	Name        string
-	Email       pgtype.Text
-	PhoneNumber pgtype.Text
-}
-
-type CreateDriverRow struct {
-	DriverID    int32
-	Name        string
-	Email       pgtype.Text
-	PhoneNumber pgtype.Text
-}
-
-func (q *Queries) CreateDriver(ctx context.Context, arg CreateDriverParams) (CreateDriverRow, error) {
-	row := q.db.QueryRow(ctx, createDriver, arg.Name, arg.Email, arg.PhoneNumber)
-	var i CreateDriverRow
-	err := row.Scan(
-		&i.DriverID,
-		&i.Name,
-		&i.Email,
-		&i.PhoneNumber,
-	)
-	return i, err
+func (q *Queries) AssignOrderToDriver(ctx context.Context, arg AssignOrderToDriverParams) error {
+	_, err := q.db.Exec(ctx, assignOrderToDriver, arg.DriverID, arg.OrderID)
+	return err
 }
 
 const createOrder = `-- name: CreateOrder :one
@@ -70,9 +38,17 @@ type CreateOrderParams struct {
 	QuotationID int32
 }
 
-func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order, error) {
+type CreateOrderRow struct {
+	OrderID     int32
+	AccountID   int32
+	QuotationID int32
+	OrderStatus pgtype.Text
+	CreatedAt   pgtype.Timestamp
+}
+
+func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (CreateOrderRow, error) {
 	row := q.db.QueryRow(ctx, createOrder, arg.AccountID, arg.QuotationID)
-	var i Order
+	var i CreateOrderRow
 	err := row.Scan(
 		&i.OrderID,
 		&i.AccountID,
@@ -108,9 +84,9 @@ func (q *Queries) CreateOrderItem(ctx context.Context, arg CreateOrderItemParams
 }
 
 const createQuotation = `-- name: CreateQuotation :one
-INSERT INTO QuotationRequest (total_cost, delivery_frequency, destination, special_handling, insurance, include_insurance, is_refused, cart_id) 
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
-RETURNING quotation_id, total_cost, delivery_frequency, destination, special_handling, insurance, include_insurance, is_refused, cart_id
+INSERT INTO QuotationRequests (total_cost, delivery_frequency, destination, special_handling, insurance, include_insurance, cart_id) 
+VALUES ($1, $2, $3, $4, $5, $6, $7) 
+RETURNING quotation_id, total_cost, delivery_frequency, destination, special_handling, insurance, include_insurance, cart_id
 `
 
 type CreateQuotationParams struct {
@@ -120,7 +96,6 @@ type CreateQuotationParams struct {
 	SpecialHandling   pgtype.Text
 	Insurance         pgtype.Numeric
 	IncludeInsurance  pgtype.Bool
-	IsRefused         pgtype.Bool
 	CartID            pgtype.Int4
 }
 
@@ -132,7 +107,6 @@ func (q *Queries) CreateQuotation(ctx context.Context, arg CreateQuotationParams
 		arg.SpecialHandling,
 		arg.Insurance,
 		arg.IncludeInsurance,
-		arg.IsRefused,
 		arg.CartID,
 	)
 	var i Quotationrequest
@@ -144,7 +118,6 @@ func (q *Queries) CreateQuotation(ctx context.Context, arg CreateQuotationParams
 		&i.SpecialHandling,
 		&i.Insurance,
 		&i.IncludeInsurance,
-		&i.IsRefused,
 		&i.CartID,
 	)
 	return i, err
@@ -279,12 +252,21 @@ func (q *Queries) DeleteCartItem(ctx context.Context, shoppingCartItemID int32) 
 }
 
 const deleteQuotation = `-- name: DeleteQuotation :exec
-DELETE FROM QuotationRequest
+DELETE FROM QuotationRequests
 WHERE quotation_id = $1
 `
 
 func (q *Queries) DeleteQuotation(ctx context.Context, quotationID int32) error {
 	_, err := q.db.Exec(ctx, deleteQuotation, quotationID)
+	return err
+}
+
+const deleteQuotationByCartID = `-- name: DeleteQuotationByCartID :exec
+DELETE FROM QuotationRequests WHERE cart_id = $1
+`
+
+func (q *Queries) DeleteQuotationByCartID(ctx context.Context, cartID pgtype.Int4) error {
+	_, err := q.db.Exec(ctx, deleteQuotationByCartID, cartID)
 	return err
 }
 
@@ -329,6 +311,38 @@ func (q *Queries) FreeItem(ctx context.Context, inventoryItemID int32) (Inventor
 	var i Inventoryitem
 	err := row.Scan(&i.InventoryItemID, &i.InventoryID, &i.Reserved)
 	return i, err
+}
+
+const getAllClientOrders = `-- name: GetAllClientOrders :many
+SELECT order_id, account_id, quotation_id, order_status, created_at, driver_id FROM Orders 
+WHERE account_id = $1
+`
+
+func (q *Queries) GetAllClientOrders(ctx context.Context, accountID int32) ([]Order, error) {
+	rows, err := q.db.Query(ctx, getAllClientOrders, accountID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Order
+	for rows.Next() {
+		var i Order
+		if err := rows.Scan(
+			&i.OrderID,
+			&i.AccountID,
+			&i.QuotationID,
+			&i.OrderStatus,
+			&i.CreatedAt,
+			&i.DriverID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getAllShoppingCartItems = `-- name: GetAllShoppingCartItems :many
@@ -405,21 +419,9 @@ func (q *Queries) GetAvailableInventoryItem(ctx context.Context, inventoryItemID
 }
 
 const getAvailableOrders = `-- name: GetAvailableOrders :many
-SELECT 
-    order_id,
-    account_id,
-    quotation_id,
-    order_status,
-    created_at
-FROM 
-    Orders o
-WHERE 
-    NOT EXISTS (
-        SELECT 1
-        FROM driver_orders d
-        WHERE d.order_id = o.order_id
-    )
-    AND order_status = 'Created'
+SELECT order_id, account_id, quotation_id, order_status, created_at, driver_id 
+FROM Orders 
+WHERE driver_id IS NULL AND order_status = 'Created'
 `
 
 func (q *Queries) GetAvailableOrders(ctx context.Context) ([]Order, error) {
@@ -437,6 +439,7 @@ func (q *Queries) GetAvailableOrders(ctx context.Context) ([]Order, error) {
 			&i.QuotationID,
 			&i.OrderStatus,
 			&i.CreatedAt,
+			&i.DriverID,
 		); err != nil {
 			return nil, err
 		}
@@ -449,43 +452,30 @@ func (q *Queries) GetAvailableOrders(ctx context.Context) ([]Order, error) {
 }
 
 const getDriverByEmail = `-- name: GetDriverByEmail :one
-
-SELECT 
-    driver_id, 
-    name, 
-    email, 
-    phone_number,
-    password
-FROM 
-    drivers
-WHERE 
-    email = $1
-LIMIT 1
+SELECT account_id, name, last_name, password, phone_number, email, address, authlevel 
+FROM Accounts 
+WHERE email = $1 AND authLevel = 'Driver'
 `
 
-type GetDriverByEmailRow struct {
-	DriverID    int32
-	Name        string
-	Email       pgtype.Text
-	PhoneNumber pgtype.Text
-	Password    string
-}
-
-// Returning the order_id and order_status
-func (q *Queries) GetDriverByEmail(ctx context.Context, email pgtype.Text) (GetDriverByEmailRow, error) {
+func (q *Queries) GetDriverByEmail(ctx context.Context, email pgtype.Text) (Account, error) {
 	row := q.db.QueryRow(ctx, getDriverByEmail, email)
-	var i GetDriverByEmailRow
+	var i Account
 	err := row.Scan(
-		&i.DriverID,
+		&i.AccountID,
 		&i.Name,
-		&i.Email,
-		&i.PhoneNumber,
+		&i.LastName,
 		&i.Password,
+		&i.PhoneNumber,
+		&i.Email,
+		&i.Address,
+		&i.Authlevel,
 	)
 	return i, err
 }
 
 const getEmailFromOrder = `-- name: GetEmailFromOrder :one
+
+
 SELECT a.email 
 FROM Orders o
 JOIN Accounts a ON o.account_id = a.account_id
@@ -493,6 +483,7 @@ WHERE o.order_id = $1
 LIMIT 1
 `
 
+// Returning the order_id and order_status
 func (q *Queries) GetEmailFromOrder(ctx context.Context, orderID int32) (pgtype.Text, error) {
 	row := q.db.QueryRow(ctx, getEmailFromOrder, orderID)
 	var email pgtype.Text
@@ -513,21 +504,12 @@ func (q *Queries) GetInventoryItemByID(ctx context.Context, inventoryItemID int3
 }
 
 const getOrdersByDriver = `-- name: GetOrdersByDriver :many
-SELECT 
-    o.order_id,
-    o.account_id,
-    o.quotation_id,
-    o.order_status,
-    o.created_at
-FROM 
-    Orders o
-JOIN 
-    Driver_orders d ON o.order_id = d.order_id
-WHERE 
-    d.driver_id = $1
+SELECT order_id, account_id, quotation_id, order_status, created_at, driver_id 
+FROM Orders 
+WHERE driver_id = $1
 `
 
-func (q *Queries) GetOrdersByDriver(ctx context.Context, driverID int32) ([]Order, error) {
+func (q *Queries) GetOrdersByDriver(ctx context.Context, driverID pgtype.UUID) ([]Order, error) {
 	rows, err := q.db.Query(ctx, getOrdersByDriver, driverID)
 	if err != nil {
 		return nil, err
@@ -542,6 +524,7 @@ func (q *Queries) GetOrdersByDriver(ctx context.Context, driverID int32) ([]Orde
 			&i.QuotationID,
 			&i.OrderStatus,
 			&i.CreatedAt,
+			&i.DriverID,
 		); err != nil {
 			return nil, err
 		}
@@ -553,8 +536,28 @@ func (q *Queries) GetOrdersByDriver(ctx context.Context, driverID int32) ([]Orde
 	return items, nil
 }
 
+const getQuotationByCartID = `-- name: GetQuotationByCartID :one
+SELECT quotation_id, total_cost, delivery_frequency, destination, special_handling, insurance, include_insurance, cart_id FROM QuotationRequests WHERE cart_id = $1
+`
+
+func (q *Queries) GetQuotationByCartID(ctx context.Context, cartID pgtype.Int4) (Quotationrequest, error) {
+	row := q.db.QueryRow(ctx, getQuotationByCartID, cartID)
+	var i Quotationrequest
+	err := row.Scan(
+		&i.QuotationID,
+		&i.TotalCost,
+		&i.DeliveryFrequency,
+		&i.Destination,
+		&i.SpecialHandling,
+		&i.Insurance,
+		&i.IncludeInsurance,
+		&i.CartID,
+	)
+	return i, err
+}
+
 const getQuotationByID = `-- name: GetQuotationByID :one
-SELECT quotation_id, total_cost, delivery_frequency, destination, special_handling, insurance, include_insurance, is_refused, cart_id FROM QuotationRequest
+SELECT quotation_id, total_cost, delivery_frequency, destination, special_handling, insurance, include_insurance, cart_id FROM QuotationRequests
 WHERE quotation_id = $1 LIMIT 1
 `
 
@@ -569,7 +572,6 @@ func (q *Queries) GetQuotationByID(ctx context.Context, quotationID int32) (Quot
 		&i.SpecialHandling,
 		&i.Insurance,
 		&i.IncludeInsurance,
-		&i.IsRefused,
 		&i.CartID,
 	)
 	return i, err
@@ -685,8 +687,6 @@ func (q *Queries) IncrementInventoryStock(ctx context.Context, arg IncrementInve
 }
 
 const markOrderAsDelivered = `-- name: MarkOrderAsDelivered :one
-
-
 UPDATE Orders
 SET 
     order_status = 'Delivered'
@@ -701,7 +701,6 @@ type MarkOrderAsDeliveredRow struct {
 	OrderStatus pgtype.Text
 }
 
-// Driver ID
 func (q *Queries) MarkOrderAsDelivered(ctx context.Context, orderID int32) (MarkOrderAsDeliveredRow, error) {
 	row := q.db.QueryRow(ctx, markOrderAsDelivered, orderID)
 	var i MarkOrderAsDeliveredRow
@@ -719,35 +718,4 @@ func (q *Queries) ReserveItem(ctx context.Context, inventoryItemID int32) (Inven
 	var i Inventoryitem
 	err := row.Scan(&i.InventoryItemID, &i.InventoryID, &i.Reserved)
 	return i, err
-}
-
-const GetAllClientOrders = `-- name: getAllClientOrders :many
-SELECT order_id, account_id, quotation_id, order_status, created_at FROM Orders 
-WHERE account_id = $1
-`
-
-func (q *Queries) GetAllClientOrders(ctx context.Context, accountID int32) ([]Order, error) {
-	rows, err := q.db.Query(ctx, GetAllClientOrders, accountID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Order
-	for rows.Next() {
-		var i Order
-		if err := rows.Scan(
-			&i.OrderID,
-			&i.AccountID,
-			&i.QuotationID,
-			&i.OrderStatus,
-			&i.CreatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
 }
