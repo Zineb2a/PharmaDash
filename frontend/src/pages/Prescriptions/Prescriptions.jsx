@@ -1,16 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import axios from "axios";
-import LeaveAReview from "../../components/LeaveAReview/LeaveAReview";
 import "./Prescriptions.css";
 
+// Assuming StoreContext is already implemented
+import { StoreContext } from "./../../Context/StoreContext";
+
 const Prescription = () => {
+  const { state } = useContext(StoreContext); // Access global state
+  const isLoggedIn = state?.user?.isLoggedIn; // Adjust based on your store's structure
+
   const [file, setFile] = useState(null);
   const [uploadStatus, setUploadStatus] = useState("");
 
   // Handle file selection
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
-    setUploadStatus(""); 
+    setUploadStatus("");
   };
 
   // Handle file upload
@@ -41,11 +46,27 @@ const Prescription = () => {
     }
   };
 
+  // If the user is not logged in, show a message and hide the upload functionality
+  if (!isLoggedIn) {
+    return (
+      <div className="prescription-container">
+        <h2>Upload Your Prescription</h2>
+        <p className="upload-status">
+          You must log in to upload your prescription.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="prescription-container">
       <h2>Upload Your Prescription</h2>
       <div className="upload-box">
-        <input type="file" onChange={handleFileChange} accept=".jpg,.jpeg,.png,.pdf" />
+        <input
+          type="file"
+          onChange={handleFileChange}
+          accept=".jpg,.jpeg,.png,.pdf"
+        />
         <button onClick={handleUpload}>Upload</button>
       </div>
       {uploadStatus && <p className="upload-status">{uploadStatus}</p>}
