@@ -1,0 +1,131 @@
+/* General container styling */
+.list-container {
+    width: 80%;
+    margin: 50px auto;
+    color: #333;
+    font-family: 'Arial', sans-serif;
+    font-size: 16px;
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.list-container p {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Table container */
+.list-table {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Table rows */
+.list-table-format {
+    display: grid;
+    grid-template-columns: 0.5fr 2fr 1fr 1fr 1fr 1fr 0.5fr;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 15px;
+    border: 1px solid #cacaca;
+    font-size: 13px;
+    border-radius: 6px;
+    background-color: #fff;
+    transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.list-table-format:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transform: scale(1.01);
+}
+
+.list-table-format img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+/* Title row */
+.list-table-format.title {
+    background-color: #f9f9f9;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    border: none;
+}
+
+.list-table-format.title b {
+    color: #555;
+}
+
+/* Remove button */
+.cursor {
+    color: #e74c3c;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    transition: color 0.2s ease;
+}
+
+.cursor:hover {
+    color: #c0392b;
+}
+
+/* Loading spinner */
+.spinner {
+    text-align: center;
+    color: #666;
+    font-size: 16px;
+    margin-top: 20px;
+}
+
+/* Empty list message */
+.empty-list {
+    text-align: center;
+    color: #888;
+    font-size: 16px;
+    margin-top: 20px;
+}
+
+/* Responsive design */
+@media (max-width: 800px) {
+    .list-container {
+        width: 90%;
+    }
+
+    .list-table-format {
+        grid-template-columns: 1fr 2fr 1fr 1fr 1fr;
+    }
+
+    .list-table-format.title {
+        grid-template-columns: 1fr 2fr 1fr 1fr 1fr;
+    }
+
+    .list-table-format img {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+@media (max-width: 600px) {
+    .list-table-format {
+        grid-template-columns: 1fr 3fr 1fr;
+        gap: 15px;
+    }
+
+    .list-table-format img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .list-table-format.title {
+        display: none;
+    }
+}
