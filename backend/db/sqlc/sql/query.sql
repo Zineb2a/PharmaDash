@@ -105,6 +105,10 @@ INSERT INTO OrderItems (order_id, inventory_item_id, quantity)
 VALUES ($1, $2, $3) 
 RETURNING order_item_id, order_id, inventory_item_id, quantity;
 
+-- name: DeleteQuotation :exec
+DELETE FROM QuotationRequest
+WHERE quotation_id = $1;
+
 -- name: GetAvailableOrders :many
 SELECT 
     order_id,

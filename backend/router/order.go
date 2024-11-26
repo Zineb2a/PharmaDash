@@ -90,6 +90,13 @@ func (server *Server) CreateOrder(c *gin.Context) {
 		return
 	}
 
+	// Delete the quotation
+	err = query.DeleteQuotation(ctx, quotation.QuotationID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to delete quotation."})
+		return
+	}
+
 	// Commit the transaction
 	if err := conn.Commit(ctx); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "Transaction failed."})
