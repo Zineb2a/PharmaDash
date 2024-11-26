@@ -1,4 +1,4 @@
-CREATE TABLE quotation_requests (
+CREATE TABLE QuotationRequest (
     quotation_id SERIAL PRIMARY KEY,
     total_cost NUMERIC,
     delivery_frequency TEXT,
