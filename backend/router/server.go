@@ -60,7 +60,11 @@ func GetNewServer() (*Server, error) {
 			cart.POST("/delete_quotation", server.mustAuthChecker, server.DeleteQuotation)
 
 		}
-		api.POST("/order", server.CreateOrder)
+		order := router.Group("/order")
+		{
+			order.POST("/create_order", server.CreateOrder)
+			order.GET("/get_orders", server.mustAuthChecker, server.GetAllOrders)
+		}
 	}
 	return server, nil
 }

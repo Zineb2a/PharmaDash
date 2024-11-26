@@ -61,16 +61,16 @@ CREATE TABLE IF NOT EXISTS ShoppingCartItems (
 );
 
 CREATE TABLE IF NOT EXISTS QuotationRequest (
-  quotation_id SERIAL PRIMARY KEY,
-  total_cost DECIMAL(10,2),
-  delivery_frequency TEXT NOT NULL,
-  destination        TEXT NOT NULL,
-  special_handling   TEXT,
-  insurance          DECIMAL(10,2),
-  include_insurance  BOOLEAN DEFAULT TRUE, -- apply by default
-  is_refused         BOOLEAN DEFAULT FALSE, -- default is accepted
-  cart_id            INTEGER,
-  FOREIGN KEY (cart_id) REFERENCES ShoppingCart(cart_id)
+    quotation_id SERIAL PRIMARY KEY,
+    total_cost NUMERIC,
+    delivery_frequency TEXT,
+    destination TEXT,
+    special_handling TEXT,
+    insurance NUMERIC,
+    include_insurance BOOLEAN,
+    is_refused BOOLEAN,
+    cart_id INT,
+    FOREIGN KEY (cart_id) REFERENCES ShoppingCart(cart_id)
 );
 
 CREATE TABLE IF NOT EXISTS Orders (
@@ -92,6 +92,10 @@ CREATE TABLE IF NOT EXISTS OrderItems (
     FOREIGN KEY (inventory_item_id) REFERENCES InventoryItems(inventory_item_id)
 );
 
+
+
+
+--to delete
 CREATE TABLE IF NOT EXISTS Drivers (
   driver_id SERIAL PRIMARY KEY,
   name varchar(50) NOT NULL,

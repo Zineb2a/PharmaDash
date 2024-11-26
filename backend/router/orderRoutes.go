@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/http"
 	db "pharmaDashServer/db/sqlc"
+	"pharmaDashServer/token"
 	"pharmaDashServer/util"
 
 	"github.com/gin-gonic/gin"
@@ -105,4 +106,32 @@ func (server *Server) CreateOrder(c *gin.Context) {
 
 	// Respond with success
 	c.JSON(http.StatusOK, gin.H{"status": "Order created successfully", "order_id": order.OrderID})
+}
+
+func (server *Server) GetAllOrders(c *gin.Context) {
+	payload := c.MustGet("auth_payload").(*token.Payload)
+	email := payload.Username
+
+	ctx := context.Background()
+	conn, err := server.pool.Acquire(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Server error."})
+		return
+	}
+	defer conn.Release()
+	query := db.New(conn)
+
+	dbUser, err := query.GetUserByEmail(ctx, pgtype.Text{String: email, Valid: true})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Server error."})
+		return
+	}
+
+	dbOrders, err := query.GetAllClientOrders(ctx, dbUser.AccountID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Server error."})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"orders": dbOrders})
 }
