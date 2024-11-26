@@ -31,7 +31,7 @@ const ContactUs = () => {
         <div className="contact-item">
           <FontAwesomeIcon icon={faLocationDot} className="contact-icon" />
           <h3>Address</h3>
-          <p>123 Pharmadash St., Health City, HC 56789</p>
+          <p>123 Concordia Street, Montreal, QC H3H 1K4</p>
         </div>
       </div>
 
