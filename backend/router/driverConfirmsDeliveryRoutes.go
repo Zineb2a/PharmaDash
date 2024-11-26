@@ -54,7 +54,7 @@ func (server *Server) ConfirmOrderDelivery(c *gin.Context) {
 	}
 
 	// Send email notification to the user
-	if err := sendEmail(userEmail.String, "Your order has been delivered", "Your order has been successfully delivered by driver: "+driverEmail); err != nil {
+	if err := util.SendEmail(userEmail.String, "Your order has been delivered", "Your order has been successfully delivered by driver: "+driverEmail); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to send confirmation email."})
 		return
 	}

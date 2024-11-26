@@ -77,7 +77,7 @@ func (server *Server) PickUpOrder(c *gin.Context) {
 	}
 
 	// Send email notification to the user
-	if err := sendEmail(userEmail.String, "Your order is out for delivery", "Your order is now being delivered by driver: "+driver.Name); err != nil {
+	if err := util.SendEmail(userEmail.String, "Your order is out for delivery", "Your order is now being delivered by driver: "+driver.Name); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to send notification email."})
 		return
 	}

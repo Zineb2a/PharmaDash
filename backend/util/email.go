@@ -1,11 +1,11 @@
-package server
+package util
 
 import (
 	"log"
 	"net/smtp"
 )
 
-func sendEmail(to, subject, body string) error {
+func SendEmail(to, subject, body string) error {
 	from := "pharmadash343@gmail.com"
 	pass := "pharmadash343!!"
 
