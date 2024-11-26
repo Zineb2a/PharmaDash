@@ -11,6 +11,38 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const addFeedback = `-- name: AddFeedback :one
+INSERT INTO Feedback (order_id, client_id, rating, comment)
+VALUES ($1, $2, $3, $4)
+RETURNING feedback_id, order_id, client_id, rating, comment, created_at
+`
+
+type AddFeedbackParams struct {
+	OrderID  int32
+	ClientID int32
+	Rating   int32
+	Comment  pgtype.Text
+}
+
+func (q *Queries) AddFeedback(ctx context.Context, arg AddFeedbackParams) (Feedback, error) {
+	row := q.db.QueryRow(ctx, addFeedback,
+		arg.OrderID,
+		arg.ClientID,
+		arg.Rating,
+		arg.Comment,
+	)
+	var i Feedback
+	err := row.Scan(
+		&i.FeedbackID,
+		&i.OrderID,
+		&i.ClientID,
+		&i.Rating,
+		&i.Comment,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const assignOrderToDriver = `-- name: AssignOrderToDriver :one
 
 
@@ -331,6 +363,37 @@ func (q *Queries) FreeItem(ctx context.Context, inventoryItemID int32) (Inventor
 	return i, err
 }
 
+const getAllClientOrders = `-- name: GetAllClientOrders :many
+SELECT order_id, account_id, quotation_id, order_status, created_at FROM Orders 
+WHERE account_id = $1
+`
+
+func (q *Queries) GetAllClientOrders(ctx context.Context, accountID int32) ([]Order, error) {
+	rows, err := q.db.Query(ctx, getAllClientOrders, accountID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Order
+	for rows.Next() {
+		var i Order
+		if err := rows.Scan(
+			&i.OrderID,
+			&i.AccountID,
+			&i.QuotationID,
+			&i.OrderStatus,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAllShoppingCartItems = `-- name: GetAllShoppingCartItems :many
 SELECT shopping_cart_item_id, cart_id, sci.inventory_item_id, ii.inventory_item_id, ii.inventory_id, reserved, i.inventory_id, pharmacy_id, item_name, item_description, medication_name, unit_price, stock_quantity, otc
 FROM ShoppingCartItems AS sci
@@ -510,6 +573,17 @@ func (q *Queries) GetInventoryItemByID(ctx context.Context, inventoryItemID int3
 	var i Inventoryitem
 	err := row.Scan(&i.InventoryItemID, &i.InventoryID, &i.Reserved)
 	return i, err
+}
+
+const getOrderStatus = `-- name: GetOrderStatus :one
+SELECT order_status FROM Orders WHERE order_id = $1
+`
+
+func (q *Queries) GetOrderStatus(ctx context.Context, orderID int32) (pgtype.Text, error) {
+	row := q.db.QueryRow(ctx, getOrderStatus, orderID)
+	var order_status pgtype.Text
+	err := row.Scan(&order_status)
+	return order_status, err
 }
 
 const getOrdersByDriver = `-- name: GetOrdersByDriver :many
@@ -719,35 +793,4 @@ func (q *Queries) ReserveItem(ctx context.Context, inventoryItemID int32) (Inven
 	var i Inventoryitem
 	err := row.Scan(&i.InventoryItemID, &i.InventoryID, &i.Reserved)
 	return i, err
-}
-
-const GetAllClientOrders = `-- name: getAllClientOrders :many
-SELECT order_id, account_id, quotation_id, order_status, created_at FROM Orders 
-WHERE account_id = $1
-`
-
-func (q *Queries) GetAllClientOrders(ctx context.Context, accountID int32) ([]Order, error) {
-	rows, err := q.db.Query(ctx, GetAllClientOrders, accountID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Order
-	for rows.Next() {
-		var i Order
-		if err := rows.Scan(
-			&i.OrderID,
-			&i.AccountID,
-			&i.QuotationID,
-			&i.OrderStatus,
-			&i.CreatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
 }

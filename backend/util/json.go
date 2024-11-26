@@ -40,3 +40,9 @@ type PickUpOrderRequest struct {
 type ConfirmDeliveryRequest struct {
 	OrderID int32 `json:"order_id" binding:"required"`
 }
+
+type AddFeedbackRequest struct {
+	OrderID int32  `json:"order_id" binding:"required"`
+	Rating  int32  `json:"rating" binding:"required"`
+	Comment string `json:"comment"`
+}

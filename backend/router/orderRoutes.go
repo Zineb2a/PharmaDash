@@ -1,4 +1,3 @@
-// order_handler.go
 package server
 
 import (
