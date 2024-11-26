@@ -117,8 +117,8 @@ func (server *Server) CreateDeliveryQuotation(c *gin.Context) {
 
 	createQuotationParams := db.CreateQuotationParams{
 		TotalCost:         pgNumericInsurance2,
-		DeliveryFrequency: req.DeliveryFrequency,
-		Destination:       req.Destination,
+		DeliveryFrequency: pgtype.Text{String: req.DeliveryFrequency},
+		Destination:       pgtype.Text{String: req.Destination},
 		SpecialHandling:   req.SpecialHandling,
 		Insurance:         pgNumericInsurance,
 		IncludeInsurance:  pgtype.Bool{Bool: true, Valid: true},

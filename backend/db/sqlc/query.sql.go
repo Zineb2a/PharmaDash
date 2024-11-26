@@ -115,8 +115,8 @@ RETURNING quotation_id, total_cost, delivery_frequency, destination, special_han
 
 type CreateQuotationParams struct {
 	TotalCost         pgtype.Numeric
-	DeliveryFrequency string
-	Destination       string
+	DeliveryFrequency pgtype.Text
+	Destination       pgtype.Text
 	SpecialHandling   pgtype.Text
 	Insurance         pgtype.Numeric
 	IncludeInsurance  pgtype.Bool
@@ -709,4 +709,35 @@ func (q *Queries) ReserveItem(ctx context.Context, inventoryItemID int32) (Inven
 	var i Inventoryitem
 	err := row.Scan(&i.InventoryItemID, &i.InventoryID, &i.Reserved)
 	return i, err
+}
+
+const GetAllClientOrders = `-- name: getAllClientOrders :many
+SELECT order_id, account_id, quotation_id, order_status, created_at FROM Orders 
+WHERE account_id = $1
+`
+
+func (q *Queries) GetAllClientOrders(ctx context.Context, accountID int32) ([]Order, error) {
+	rows, err := q.db.Query(ctx, GetAllClientOrders, accountID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Order
+	for rows.Next() {
+		var i Order
+		if err := rows.Scan(
+			&i.OrderID,
+			&i.AccountID,
+			&i.QuotationID,
+			&i.OrderStatus,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

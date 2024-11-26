@@ -59,7 +59,11 @@ func GetNewServer() (*Server, error) {
 			cart.POST("/delivery_quotation/refuse", server.mustAuthChecker, server.RefuseQuotation)
 
 		}
-		api.POST("/order", server.CreateOrder)
+		order := router.Group("/order")
+		{
+			order.POST("/create_order", server.CreateOrder)
+			order.GET("/get_orders", server.mustAuthChecker, server.GetAllOrders)
+		}
 	}
 	return server, nil
 }

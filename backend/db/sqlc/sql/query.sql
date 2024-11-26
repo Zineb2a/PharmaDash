@@ -191,3 +191,7 @@ FROM Orders o
 JOIN Accounts a ON o.account_id = a.account_id
 WHERE o.order_id = $1
 LIMIT 1;
+
+-- name: GetAllClientOrders :many
+SELECT * FROM Orders 
+WHERE account_id = $1;
