@@ -1,0 +1,162 @@
+/* General form styling */
+.add {
+    width: 70%;
+    margin: 50px auto;
+    color: #333;
+    font-family: 'Arial', sans-serif;
+    font-size: 16px;
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.add form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Image upload styling */
+.add-img-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+}
+
+.add-img-upload img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border: 2px dashed #ccc;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+.add-img-upload img:hover {
+    border-color: tomato;
+    transform: scale(1.05);
+}
+
+.add-img-upload p {
+    font-size: 14px;
+    color: #666;
+}
+
+/* Input fields */
+.add-product-name,
+.add-product-description {
+    width: 100%;
+}
+
+.add-product-name input,
+.add-product-description textarea,
+.add-category-price select,
+.add-category-price input {
+    width: 100%;
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+.add-product-name input:focus,
+.add-product-description textarea:focus,
+.add-category-price select:focus,
+.add-category-price input:focus {
+    border-color: tomato;
+    outline: none;
+}
+
+/* Category and price */
+.add-category-price {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.add-category-price select,
+.add-category-price input {
+    flex: 1;
+    max-width: 150px;
+}
+
+/* Quantity styling */
+.add-quantity {
+    flex: 1;
+}
+
+/* Checkbox styling */
+.add-prescription {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+    color: #333;
+    font-size: 14px;
+}
+
+.add-prescription input {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: border-color 0.3s;
+}
+
+.add-prescription input:checked {
+    border-color: tomato;
+    background-color: tomato;
+}
+
+.add-prescription label {
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* Button styling */
+.add-btn {
+    width: 150px;
+    align-self: center;
+    border: none;
+    padding: 12px 20px;
+    background-color: tomato;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s;
+}
+
+.add-btn:hover {
+    background-color: rgb(244, 54, 20);
+    transform: scale(1.05);
+}
+
+.add-btn:disabled {
+    background-color: #ddd;
+    cursor: not-allowed;
+}
+
+/* Responsive design */
+@media (max-width: 900px) {
+    .add {
+        width: 90%;
+    }
+
+    .add-category-price {
+        flex-direction: column;
+    }
+
+    .add-category-price select,
+    .add-category-price input {
+        max-width: 100%;
+    }
+}
