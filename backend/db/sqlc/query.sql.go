@@ -43,38 +43,6 @@ func (q *Queries) AddFeedback(ctx context.Context, arg AddFeedbackParams) (Feedb
 	return i, err
 }
 
-const assignOrderToDriver = `-- name: AssignOrderToDriver :one
-
-
-BEGIN
-`
-
-type AddFeedbackParams struct {
-	OrderID  int32
-	ClientID int32
-	Rating   int32
-	Comment  pgtype.Text
-}
-
-func (q *Queries) AddFeedback(ctx context.Context, arg AddFeedbackParams) (Feedback, error) {
-	row := q.db.QueryRow(ctx, addFeedback,
-		arg.OrderID,
-		arg.ClientID,
-		arg.Rating,
-		arg.Comment,
-	)
-	var i Feedback
-	err := row.Scan(
-		&i.FeedbackID,
-		&i.OrderID,
-		&i.ClientID,
-		&i.Rating,
-		&i.Comment,
-		&i.CreatedAt,
-	)
-	return i, err
-}
-
 const assignOrderToDriver = `-- name: AssignOrderToDriver :exec
 UPDATE Orders
 SET driver_id = $1, order_status = 'Out for delivery' -- The account ID of the driver
@@ -569,28 +537,6 @@ func (q *Queries) GetInventoryItemByID(ctx context.Context, inventoryItemID int3
 
 const getOrderStatus = `-- name: GetOrderStatus :one
 SELECT order_status FROM Orders WHERE order_id = $1
-`
-
-func (q *Queries) GetOrderStatus(ctx context.Context, orderID int32) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, getOrderStatus, orderID)
-	var order_status pgtype.Text
-	err := row.Scan(&order_status)
-	return order_status, err
-}
-
-const getOrdersByDriver = `-- name: GetOrdersByDriver :many
-SELECT 
-    o.order_id,
-    o.account_id,
-    o.quotation_id,
-    o.order_status,
-    o.created_at
-FROM 
-    Orders o
-JOIN 
-    Driver_orders d ON o.order_id = d.order_id
-WHERE 
-    d.driver_id = $1
 `
 
 func (q *Queries) GetOrderStatus(ctx context.Context, orderID int32) (pgtype.Text, error) {
