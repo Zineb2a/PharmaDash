@@ -28,14 +28,7 @@ type Feedback struct {
 	CreatedAt  pgtype.Timestamp
 }
 
-type Feedback struct {
-	FeedbackID int32
-	OrderID    int32
-	ClientID   int32
-	Rating     int32
-	Comment    pgtype.Text
-	CreatedAt  pgtype.Timestamp
-}
+
 
 type Inventory struct {
 	InventoryID     int32
