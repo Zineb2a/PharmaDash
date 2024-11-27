@@ -19,17 +19,13 @@ type Account struct {
 	Authlevel   string
 }
 
-type Driver struct {
-	DriverID    int32
-	Name        string
-	PhoneNumber pgtype.Text
-	Email       pgtype.Text
-	Password    string
-}
-
-type DriverOrder struct {
-	DriverID int32
-	OrderID  int32
+type Feedback struct {
+	FeedbackID int32
+	OrderID    int32
+	ClientID   int32
+	Rating     int32
+	Comment    pgtype.Text
+	CreatedAt  pgtype.Timestamp
 }
 
 type Feedback struct {
@@ -64,6 +60,7 @@ type Order struct {
 	QuotationID int32
 	OrderStatus pgtype.Text
 	CreatedAt   pgtype.Timestamp
+	DriverID    pgtype.UUID
 }
 
 type Orderitem struct {
@@ -98,7 +95,6 @@ type Quotationrequest struct {
 	SpecialHandling   pgtype.Text
 	Insurance         pgtype.Numeric
 	IncludeInsurance  pgtype.Bool
-	IsRefused         pgtype.Bool
 	CartID            pgtype.Int4
 }
 

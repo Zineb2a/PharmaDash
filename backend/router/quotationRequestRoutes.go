@@ -2,6 +2,8 @@ package server
 
 import (
 	"context"
+	"database/sql"
+
 	//"encoding/json"
 	//"io"
 	"net/http"
@@ -17,7 +19,6 @@ import (
 	"math/big"
 )
 
-// Returned delivery quoatation
 type QuotationResponse struct {
 	Status      string  `json:"status"`
 	TotalCost   float64 `json:"total_cost"`
@@ -29,12 +30,11 @@ type QuotationResponse struct {
 type QuotationRequest struct {
 	QuotationID       int32          `json:"quotation_id"` // to keep track of which quotation was reufsed or accepted
 	TotalCost         float64        `json:"total_cost"`
-	DeliveryFrequency string         `json:"delivery_frequency"`
-	Destination       string         `json:"destination"`
+	DeliveryFrequency pgtype.Text    `json:"delivery_frequency"`
+	Destination       pgtype.Text    `json:"destination"`
 	SpecialHandling   pgtype.Text    `json:"special_handling,omitempty"`
 	Insurance         pgtype.Numeric `json:"insurance"`
 	IncludeInsurance  bool           `json:"include_insurance"`
-	IsRefused         pgtype.Bool    `json:"is_refused"`
 	CartID            int32          `json:"cart_id"`
 }
 
@@ -77,6 +77,29 @@ func (server *Server) CreateDeliveryQuotation(c *gin.Context) {
 		return
 	}
 
+	// Check for existing quotation for the cart
+	// If a quotation exists for this cart, delete it as a new one is being generated
+	existingQuotation, err := query.GetQuotationByCartID(ctx, pgtype.Int4{Int32: req.CartID})
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// No existing quotation found, proceed to create a new one
+		} else {
+			// Other database error occurred
+			c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to fetch existing quotation."})
+			return
+		}
+	} else {
+		if existingQuotation.QuotationID != 0 {
+			// Existing quotation found, delete it as a new one is being generated
+			err = query.DeleteQuotationByCartID(ctx, pgtype.Int4{Int32: req.CartID})
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to replace existing quotation."})
+				return
+			}
+		}
+	}
+
 	totalCost := 0.0
 	for _, item := range cartItems {
 		price, _ := item.UnitPrice.Int.Float64()
@@ -95,34 +118,16 @@ func (server *Server) CreateDeliveryQuotation(c *gin.Context) {
 
 	totalCost += deliveryFee
 
-	bigIntInsurance := new(big.Int)
-	bigIntInsurance.SetInt64(int64(insuranceCost * 100)) // Convert to cents to avoid float precision issues
-
-	// Initialize pgtype.Numeric
-	var pgNumericInsurance pgtype.Numeric
-
-	// Assign the big.Int value to the pgtype.Numeric
-	pgNumericInsurance.Int = bigIntInsurance
-	pgNumericInsurance.Valid = true // Mark as valid
-
-	bigIntInsurance2 := new(big.Int)
-	bigIntInsurance2.SetInt64(int64(totalCost * 100)) // Convert to cents to avoid float precision issues
-
-	// Initialize pgtype.Numeric
-	var pgNumericInsurance2 pgtype.Numeric
-
-	// Assign the big.Int value to the pgtype.Numeric
-	pgNumericInsurance.Int = bigIntInsurance
-	pgNumericInsurance.Valid = true // Mark as valid
+	pgNumericInsurance := createPgNumeric(insuranceCost)
+	pgNumericTotalCost := createPgNumeric(totalCost)
 
 	createQuotationParams := db.CreateQuotationParams{
-		TotalCost:         pgNumericInsurance2,
-		DeliveryFrequency: pgtype.Text{String: req.DeliveryFrequency},
-		Destination:       pgtype.Text{String: req.Destination},
+		TotalCost:         pgNumericTotalCost,
+		DeliveryFrequency: req.DeliveryFrequency,
+		Destination:       req.Destination,
 		SpecialHandling:   req.SpecialHandling,
 		Insurance:         pgNumericInsurance,
 		IncludeInsurance:  pgtype.Bool{Bool: true, Valid: true},
-		IsRefused:         pgtype.Bool{Bool: false, Valid: true}, // Assuming not refused when created
 	}
 
 	// Call CreateQuotation
@@ -151,31 +156,11 @@ func (server *Server) CreateDeliveryQuotation(c *gin.Context) {
 
 }
 
-// to keep track of acceptance or refusal of quotations
-func (server *Server) AcceptQuotation(c *gin.Context) {
-	var req struct {
-		QuotationID string `json:"quotation_id"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "Invalid request."})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"status": "Quotation accepted, proceeding to payment."})
-
-	// CALL PAYMENT HERE - after quotation has been accepted
-}
-
-func (server *Server) RefuseQuotation(c *gin.Context) {
-	var req struct {
-		QuotationID string `json:"quotation_id"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "Invalid request."})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"status": "Quotation refused, returning to previous options."})
+// helper function
+func createPgNumeric(value float64) pgtype.Numeric {
+	bigInt := new(big.Int)
+	bigInt.SetInt64(int64(value * 100)) // Convert to cents to avoid float precision issues
+	return pgtype.Numeric{Int: bigInt, Valid: true}
 }
 
 func (server *Server) DeleteQuotation(c *gin.Context) {
