@@ -168,3 +168,11 @@ SELECT * FROM QuotationRequests WHERE cart_id = $1;
 
 -- name: DeleteQuotationByCartID :exec
 DELETE FROM QuotationRequests WHERE cart_id = $1;
+
+-- name: AddFeedback :one
+INSERT INTO Feedback (order_id, client_id, rating, comment)
+VALUES ($1, $2, $3, $4)
+RETURNING feedback_id, order_id, client_id, rating, comment, created_at;
+
+-- name: GetOrderStatus :one
+SELECT order_status FROM Orders WHERE order_id = $1;
