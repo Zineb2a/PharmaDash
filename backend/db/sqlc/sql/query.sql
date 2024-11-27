@@ -86,13 +86,14 @@ JOIN
 WHERE 
     sc.cart_id = $1;
 
+
 -- name: CreateQuotation :one
-INSERT INTO QuotationRequest (total_cost, delivery_frequency, destination, special_handling, insurance, include_insurance, is_refused, cart_id) 
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+INSERT INTO QuotationRequests (total_cost, delivery_frequency, destination, special_handling, insurance, include_insurance, cart_id) 
+VALUES ($1, $2, $3, $4, $5, $6, $7) 
 RETURNING *;
 
 -- name: GetQuotationByID :one
-SELECT * FROM QuotationRequest
+SELECT * FROM QuotationRequests
 WHERE quotation_id = $1 LIMIT 1;
 
 -- name: CreateOrder :one
@@ -106,34 +107,9 @@ VALUES ($1, $2, $3)
 RETURNING order_item_id, order_id, inventory_item_id, quantity;
 
 -- name: DeleteQuotation :exec
-DELETE FROM QuotationRequest
+DELETE FROM QuotationRequests
 WHERE quotation_id = $1;
 
--- name: GetAvailableOrders :many
-SELECT 
-    order_id,
-    account_id,
-    quotation_id,
-    order_status,
-    created_at
-FROM 
-    Orders o
-WHERE 
-    NOT EXISTS (
-        SELECT 1
-        FROM driver_orders d
-        WHERE d.order_id = o.order_id
-    )
-    AND order_status = 'Created';  -- Order is still in a pending state
-
-
--- name: AssignOrderToDriver :one
-BEGIN;
-
--- Insert into driver_orders table to assign the order to the driver
-INSERT INTO driver_orders (driver_id, order_id)
-VALUES ($1, $2)
-ON CONFLICT (driver_id, order_id) DO NOTHING;  -- Avoid duplicate entries if the order is already assigned
 
 -- Update the order status to 'Out for Delivery'
 UPDATE Orders
@@ -146,27 +122,6 @@ WHERE
 COMMIT;
 
 
--- name: CreateDriver :one
-INSERT INTO Drivers (name, email, phone_number)
-VALUES ($1, $2, $3)
-RETURNING driver_id, name, email, phone_number;
-
-
--- name: GetOrdersByDriver :many
-SELECT 
-    o.order_id,
-    o.account_id,
-    o.quotation_id,
-    o.order_status,
-    o.created_at
-FROM 
-    Orders o
-JOIN 
-    Driver_orders d ON o.order_id = d.order_id
-WHERE 
-    d.driver_id = $1;  -- Driver ID
-
-
 -- name: MarkOrderAsDelivered :one
 UPDATE Orders
 SET 
@@ -176,18 +131,6 @@ WHERE
     AND order_status = 'Out for Delivery'  -- Ensure the order is out for delivery before marking as delivered
 RETURNING order_id, order_status;  -- Returning the order_id and order_status
 
--- name: GetDriverByEmail :one
-SELECT 
-    driver_id, 
-    name, 
-    email, 
-    phone_number,
-    password
-FROM 
-    drivers
-WHERE 
-    email = $1
-LIMIT 1;
 
 -- name: GetEmailFromOrder :one
 SELECT a.email 
@@ -199,6 +142,32 @@ LIMIT 1;
 -- name: GetAllClientOrders :many
 SELECT * FROM Orders 
 WHERE account_id = $1;
+
+-- name: GetDriverByEmail :one
+SELECT * 
+FROM Accounts 
+WHERE email = $1 AND authLevel = 'Driver';
+
+-- name: GetAvailableOrders :many
+SELECT * 
+FROM Orders 
+WHERE driver_id IS NULL AND order_status = 'Created';
+
+-- name: AssignOrderToDriver :exec
+UPDATE Orders
+SET driver_id = $1, order_status = 'Out for delivery' -- The account ID of the driver
+WHERE order_id = $2 AND driver_id IS NULL;
+
+-- name: GetOrdersByDriver :many
+SELECT * 
+FROM Orders 
+WHERE driver_id = $1;
+
+-- name: GetQuotationByCartID :one
+SELECT * FROM QuotationRequests WHERE cart_id = $1;
+
+-- name: DeleteQuotationByCartID :exec
+DELETE FROM QuotationRequests WHERE cart_id = $1;
 
 -- name: AddFeedback :one
 INSERT INTO Feedback (order_id, client_id, rating, comment)

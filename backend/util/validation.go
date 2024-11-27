@@ -12,13 +12,13 @@ func ValidateCardInfo(cardNumber string, expiryDate string, cvv string) error {
 	cvvPattern := `^\d{3}$`
 
 	if !regexp.MustCompile(cardNumberPattern).MatchString(cardNumber) {
-		return errors.New("Invalid card number format")
+		return errors.New("invalid card number format")
 	}
 	if !regexp.MustCompile(expiryDatePattern).MatchString(expiryDate) {
-		return errors.New("Invalid expiry date format")
+		return errors.New("invalid expiry date format")
 	}
 	if !regexp.MustCompile(cvvPattern).MatchString(cvv) {
-		return errors.New("Invalid CVV format")
+		return errors.New("invalid CVV format")
 	}
 	return nil
 }

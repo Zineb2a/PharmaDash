@@ -9,12 +9,18 @@ import (
 	"pharmaDashServer/util"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func (server *Server) ConfirmOrderDelivery(c *gin.Context) {
 	// Get the driver's email from the token payload
 	payload := c.MustGet("auth_payload").(*token.Payload)
+	if payload.Role != "Driver" {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Invalid Request: only drivers can perform this operation"})
+		return
+	}
+
 	driverEmail := payload.Username
 	ctx := context.Background()
 
@@ -72,6 +78,10 @@ func (server *Server) ConfirmOrderDelivery(c *gin.Context) {
 func (server *Server) PickUpOrder(c *gin.Context) {
 	// Get the driver's email from the token payload
 	payload := c.MustGet("auth_payload").(*token.Payload)
+	if payload.Role != "Driver" {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Invalid Request: only drivers can perform this operation"})
+		return
+	}
 	driverEmail := payload.Username
 	ctx := context.Background()
 
@@ -120,8 +130,14 @@ func (server *Server) PickUpOrder(c *gin.Context) {
 		return
 	}
 
+	id := ConvertUUIDToPGTypeUUID(payload.ID)
+	assignOrder := db.AssignOrderToDriverParams{
+		DriverID: id,
+		OrderID:  req.OrderID,
+	}
+
 	// Lock the order for this driver and update its status
-	if _, err := query.AssignOrderToDriver(ctx); err != nil {
+	if err := query.AssignOrderToDriver(ctx, assignOrder); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to assign order."})
 		return
 	}
@@ -145,4 +161,17 @@ func (server *Server) PickUpOrder(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "Order picked up successfully."})
+}
+
+// helper function
+// Assuming you have payload.ID of type uuid.UUID
+func ConvertUUIDToPGTypeUUID(payloadID uuid.UUID) pgtype.UUID {
+	var pgUUID pgtype.UUID
+
+	// Copy the UUID into pgUUID.Bytes
+	copy(pgUUID.Bytes[:], payloadID[:]) // copying bytes from uuid.UUID to pgtype.UUID
+
+	pgUUID.Valid = true // Mark as valid UUID
+
+	return pgUUID
 }
