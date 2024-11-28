@@ -1,4 +1,3 @@
-/* General form styling */
 .add {
     width: 70%;
     margin: 50px auto;
@@ -17,43 +16,15 @@
     gap: 20px;
 }
 
-/* Image upload styling */
-.add-img-upload {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    text-align: center;
-}
-
-.add-img-upload img {
-    width: 120px;
-    height: 120px;
-    object-fit: cover;
-    border: 2px dashed #ccc;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: all 0.3s ease-in-out;
-}
-
-.add-img-upload img:hover {
-    border-color: tomato;
-    transform: scale(1.05);
-}
-
-.add-img-upload p {
-    font-size: 14px;
-    color: #666;
-}
-
-/* Input fields */
 .add-product-name,
+.add-medication-name,  
 .add-product-description {
     width: 100%;
 }
 
 .add-product-name input,
 .add-product-description textarea,
+.add-medication-name input,
 .add-category-price select,
 .add-category-price input {
     width: 100%;
@@ -66,13 +37,13 @@
 
 .add-product-name input:focus,
 .add-product-description textarea:focus,
+.add-medication-name input:focus,
 .add-category-price select:focus,
 .add-category-price input:focus {
     border-color: tomato;
     outline: none;
 }
 
-/* Category and price */
 .add-category-price {
     display: flex;
     flex-wrap: wrap;
@@ -85,12 +56,10 @@
     max-width: 150px;
 }
 
-/* Quantity styling */
 .add-quantity {
     flex: 1;
 }
 
-/* Checkbox styling */
 .add-prescription {
     display: flex;
     align-items: center;
@@ -119,7 +88,6 @@
     cursor: pointer;
 }
 
-/* Button styling */
 .add-btn {
     width: 150px;
     align-self: center;
@@ -145,7 +113,6 @@
     cursor: not-allowed;
 }
 
-/* Responsive design */
 @media (max-width: 900px) {
     .add {
         width: 90%;

@@ -5,49 +5,50 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 
 const Add = () => {
-    const [image, setImage] = useState(null);
     const [data, setData] = useState({
-        name: '',
+        ItemName: '',
+        MedicationName: '',
         description: '',
-        price: '',
-        category: 'Cold and Flu',
         quantity: '',
-        needsPrescription: false, // Added checkbox field
+        price: '',
+        OTC: false,
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const onSubmitHandler = async (event) => {
         event.preventDefault();
 
-        if (!image) {
-            toast.error('Please upload an image.');
-            return;
-        }
-
         setIsSubmitting(true);
 
-        const formData = new FormData();
-        formData.append('name', data.name);
-        formData.append('description', data.description);
-        formData.append('price', Number(data.price));
-        formData.append('category', data.category);
-        formData.append('quantity', Number(data.quantity));
-        formData.append('needsPrescription', data.needsPrescription); // Send checkbox value to backend
-        formData.append('image', image);
+        const requestData = {
+            
+            PharmacyID: 1, 
+            Item_Name: data.ItemName,
+            Item_Description: data.description,
+            Medication_Name: data.MedicationName,
+            Unit_price: Number(data.price),
+            Stock_Quantity: Number(data.quantity),
+            OTC: data.OTC,
+        };
 
         try {
-            const response = await axios.post(`${url}/api/food/add`, formData);
+            const url = 'http://localhost:3000';
+            const response = await axios.post(`${url}/inventory/add_item`, requestData, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
             if (response.data.success) {
                 toast.success(response.data.message);
                 setData({
-                    name: '',
+                    ItemName: '',
+                    MedicationName: '',
                     description: '',
-                    price: '',
-                    category: data.category,
                     quantity: '',
-                    needsPrescription: false,
+                    price: '',
+                    OTC: false,
                 });
-                setImage(null);
             } else {
                 toast.error(response.data.message);
             }
@@ -57,7 +58,6 @@ const Add = () => {
             setIsSubmitting(false);
         }
     };
-
     const onChangeHandler = (event) => {
         const name = event.target.name;
         const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
@@ -67,35 +67,27 @@ const Add = () => {
     return (
         <div className="add">
             <form className="flex-col" onSubmit={onSubmitHandler}>
-                <div className="add-img-upload flex-col">
-                    <p>Upload Image</p>
-                    <input
-                        onChange={(e) => {
-                            setImage(e.target.files[0]);
-                            e.target.value = '';
-                        }}
-                        type="file"
-                        accept="image/*"
-                        id="image"
-                        hidden
-                    />
-                    <label htmlFor="image">
-                        <img
-                            src={image ? URL.createObjectURL(image) : assets.upload_area}
-                            alt="Product Preview"
-                        />
-                    </label>
-                </div>
                 <div className="add-product-name flex-col">
                     <p>Product Name</p>
                     <input
-                        name="name"
+                        name="ItemName"
                         onChange={onChangeHandler}
-                        value={data.name}
+                        value={data.ItemName}
                         type="text"
-                        placeholder="Enter product name"
+                        placeholder="Enter Item name"
                         required
                     />
+                </div>
+                <div className="add-medication-name flex-col">
+                    <p> Medication Name</p>
+                    <input
+                        name="MedicationName"
+                        onChange={onChangeHandler}
+                        value={data.MedicationName}
+                        type="text"
+                        placeholder="Enter medication name"
+                        required
+                   />
                 </div>
                 <div className="add-product-description flex-col">
                     <p>Product Description</p>
@@ -109,23 +101,6 @@ const Add = () => {
                     />
                 </div>
                 <div className="add-category-price">
-                    <div className="add-category flex-col">
-                        <p>Product Category</p>
-                        <select
-                            name="category"
-                            onChange={onChangeHandler}
-                            value={data.category}
-                        >
-                            <option value="Cold and Flu">Cold and Flu</option>
-                            <option value="Allergy and Antihistamines">Allergy and Antihistamines</option>
-                            <option value="Muscle Reliefs">Muscle Reliefs</option>
-                            <option value="Digestive System Relief">Digestive System Relief</option>
-                            <option value="Pain Relievers">Pain Relievers</option>
-                            <option value="Vitamins Suppliments">Vitamins Supplements</option>
-                            <option value="Topical Antibiotics">Topical Antibiotics</option>
-                            <option value="First Aid and Wound Care">First Aid and Wound Care</option>
-                        </select>
-                    </div>
                     <div className="add-price flex-col">
                         <p>Product Price</p>
                         <input
@@ -157,7 +132,7 @@ const Add = () => {
                         checked={data.needsPrescription}
                         id="needsPrescription"
                     />
-                    <label htmlFor="needsPrescription">Needs Prescription</label>
+                    <label htmlFor="needsPrescription">OTC</label>
                 </div>
                 <button
                     type="submit"
