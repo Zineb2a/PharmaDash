@@ -22,14 +22,25 @@ const Add = () => {
 
         const requestData = {
             
-            PharmacyID: 1, 
-            Item_Name: data.ItemName,
-            Item_Description: data.description,
-            Medication_Name: data.MedicationName,
-            Unit_price: Number(data.price),
-            Stock_Quantity: Number(data.quantity),
-            OTC: data.OTC,
+            pharmacy_id: 1, 
+            item_name: data.ItemName,
+            item_description: data.description,
+            medication_name: data.MedicationName,
+            unit_price: Number(data.price),
+            stock_quantity: Number(data.quantity),
+            otc: data.OTC,
         };
+
+        // type AddItemToInventory struct {
+        //     PharmacyID       int32   `json:"pharmacy_id"`
+        //     Item_Name        string  `json:"item_name"`
+        //     Item_Description string  `json:"item_description"`
+        //     Medication_Name  string  `json:"medication_name"`
+        //     Unit_price       float32 `json:"unit_price"`
+        //     Stock_Quantity   int32   `json:"stock_quantity"`
+        //     OTC              bool    `json:"otc"`
+        // }
+        
 
         try {
             const url = 'http://localhost:3000';

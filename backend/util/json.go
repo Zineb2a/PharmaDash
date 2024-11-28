@@ -50,11 +50,11 @@ type AddFeedbackRequest struct {
 }
 
 type AddItemToInventory struct {
-	PharmacyID       int32
-	Item_Name        string
-	Item_Description string
-	Medication_Name  string
-	Unit_price       float32
-	Stock_Quantity   int32
-	OTC              bool
+	PharmacyID       int32   `json:"pharmacy_id"`
+	Item_Name        string  `json:"item_name"`
+	Item_Description string  `json:"item_description"`
+	Medication_Name  string  `json:"medication_name"`
+	Unit_price       float32 `json:"unit_price"`
+	Stock_Quantity   int32   `json:"stock_quantity"`
+	OTC              bool    `json:"otc"`
 }
