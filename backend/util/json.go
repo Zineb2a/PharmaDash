@@ -15,13 +15,13 @@ type LoginRequest struct {
 }
 
 type AddItemToCartRequest struct {
-	CartID      int32
-	InventoryID int32
+	CartID      int32 `json:"cart_id"`
+	InventoryID int32 `json:"inventory_id"`
 }
 
 type RemoveItemFromCartRequest struct {
-	CartItemID      int32
-	InventoryItemID int32
+	CartItemID      int32 `json:"cart_item_id"`
+	InventoryItemID int32 `json:"inventory_item_id"`
 }
 
 type DeleteCartRequest struct {

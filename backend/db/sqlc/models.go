@@ -80,11 +80,11 @@ type Prescription struct {
 
 type Quotationrequest struct {
 	QuotationID       int32
-	TotalCost         pgtype.Numeric
+	TotalCost         pgtype.Float8
 	DeliveryFrequency pgtype.Text
 	Destination       pgtype.Text
 	SpecialHandling   pgtype.Text
-	Insurance         pgtype.Numeric
+	Insurance         pgtype.Float8
 	IncludeInsurance  pgtype.Bool
 	CartID            pgtype.Int4
 }

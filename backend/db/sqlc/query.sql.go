@@ -171,11 +171,11 @@ RETURNING quotation_id, total_cost, delivery_frequency, destination, special_han
 `
 
 type CreateQuotationParams struct {
-	TotalCost         pgtype.Numeric
+	TotalCost         pgtype.Float8
 	DeliveryFrequency pgtype.Text
 	Destination       pgtype.Text
 	SpecialHandling   pgtype.Text
-	Insurance         pgtype.Numeric
+	Insurance         pgtype.Float8
 	IncludeInsurance  pgtype.Bool
 	CartID            pgtype.Int4
 }
@@ -353,37 +353,23 @@ func (q *Queries) DeleteQuotationByCartID(ctx context.Context, cartID pgtype.Int
 
 const freeAllCartItems = `-- name: FreeAllCartItems :one
 UPDATE InventoryItems AS ii
-SET reserved = 0
+SET reserved = false
 FROM ShoppingCartItems AS sci
 WHERE ii.inventory_item_id = sci.inventory_item_id
-AND sci.cart_id = $1 RETURNING shopping_cart_item_id, cart_id, sci.inventory_item_id, ii.inventory_item_id, inventory_id, reserved
+AND sci.cart_id = $1
+AND EXISTS (SELECT 1 FROM ShoppingCartItems WHERE cart_id = $1)
+RETURNING ii.inventory_item_id, ii.inventory_id, ii.reserved
 `
 
-type FreeAllCartItemsRow struct {
-	ShoppingCartItemID int32
-	CartID             int32
-	InventoryItemID    int32
-	InventoryItemID_2  int32
-	InventoryID        int32
-	Reserved           bool
-}
-
-func (q *Queries) FreeAllCartItems(ctx context.Context, cartID int32) (FreeAllCartItemsRow, error) {
+func (q *Queries) FreeAllCartItems(ctx context.Context, cartID int32) (Inventoryitem, error) {
 	row := q.db.QueryRow(ctx, freeAllCartItems, cartID)
-	var i FreeAllCartItemsRow
-	err := row.Scan(
-		&i.ShoppingCartItemID,
-		&i.CartID,
-		&i.InventoryItemID,
-		&i.InventoryItemID_2,
-		&i.InventoryID,
-		&i.Reserved,
-	)
+	var i Inventoryitem
+	err := row.Scan(&i.InventoryItemID, &i.InventoryID, &i.Reserved)
 	return i, err
 }
 
 const freeItem = `-- name: FreeItem :one
-UPDATE InventoryItems SET reserved = 0
+UPDATE InventoryItems SET reserved = false
 WHERE inventory_item_id = $1 RETURNING inventory_item_id, inventory_id, reserved
 `
 
@@ -491,7 +477,7 @@ func (q *Queries) GetAllOrders(ctx context.Context) ([]Order, error) {
 }
 
 const getAllShoppingCartItems = `-- name: GetAllShoppingCartItems :many
-SELECT shopping_cart_item_id, cart_id, sci.inventory_item_id, ii.inventory_item_id, ii.inventory_id, reserved, i.inventory_id, pharmacy_id, item_name, item_description, medication_name, unit_price, stock_quantity, otc
+SELECT i.unit_price, ii.inventory_item_id
 FROM ShoppingCartItems AS sci
 INNER JOIN InventoryItems AS ii ON sci.inventory_item_id = ii.inventory_item_id
 INNER JOIN Inventory AS i ON ii.inventory_id = i.inventory_id
@@ -499,20 +485,8 @@ WHERE sci.cart_id = $1
 `
 
 type GetAllShoppingCartItemsRow struct {
-	ShoppingCartItemID int32
-	CartID             int32
-	InventoryItemID    int32
-	InventoryItemID_2  int32
-	InventoryID        int32
-	Reserved           bool
-	InventoryID_2      int32
-	PharmacyID         int32
-	ItemName           string
-	ItemDescription    string
-	MedicationName     string
-	UnitPrice          float64
-	StockQuantity      int32
-	Otc                bool
+	UnitPrice       float64
+	InventoryItemID int32
 }
 
 func (q *Queries) GetAllShoppingCartItems(ctx context.Context, cartID int32) ([]GetAllShoppingCartItemsRow, error) {
@@ -524,22 +498,7 @@ func (q *Queries) GetAllShoppingCartItems(ctx context.Context, cartID int32) ([]
 	var items []GetAllShoppingCartItemsRow
 	for rows.Next() {
 		var i GetAllShoppingCartItemsRow
-		if err := rows.Scan(
-			&i.ShoppingCartItemID,
-			&i.CartID,
-			&i.InventoryItemID,
-			&i.InventoryItemID_2,
-			&i.InventoryID,
-			&i.Reserved,
-			&i.InventoryID_2,
-			&i.PharmacyID,
-			&i.ItemName,
-			&i.ItemDescription,
-			&i.MedicationName,
-			&i.UnitPrice,
-			&i.StockQuantity,
-			&i.Otc,
-		); err != nil {
+		if err := rows.Scan(&i.UnitPrice, &i.InventoryItemID); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -552,12 +511,12 @@ func (q *Queries) GetAllShoppingCartItems(ctx context.Context, cartID int32) ([]
 
 const getAvailableInventoryItem = `-- name: GetAvailableInventoryItem :one
 SELECT inventory_item_id, inventory_id, reserved FROM InventoryItems
-WHERE inventory_item_id = $1
-AND reserved = 0 LIMIT 1
+WHERE inventory_id = $1
+AND reserved = false LIMIT 1
 `
 
-func (q *Queries) GetAvailableInventoryItem(ctx context.Context, inventoryItemID int32) (Inventoryitem, error) {
-	row := q.db.QueryRow(ctx, getAvailableInventoryItem, inventoryItemID)
+func (q *Queries) GetAvailableInventoryItem(ctx context.Context, inventoryID int32) (Inventoryitem, error) {
+	row := q.db.QueryRow(ctx, getAvailableInventoryItem, inventoryID)
 	var i Inventoryitem
 	err := row.Scan(&i.InventoryItemID, &i.InventoryID, &i.Reserved)
 	return i, err
@@ -865,7 +824,7 @@ func (q *Queries) MarkOrderAsDelivered(ctx context.Context, orderID int32) (Mark
 }
 
 const reserveItem = `-- name: ReserveItem :one
-UPDATE InventoryItems SET reserved = 1
+UPDATE InventoryItems SET reserved = true
 WHERE inventory_item_id = $1 RETURNING inventory_item_id, inventory_id, reserved
 `
 

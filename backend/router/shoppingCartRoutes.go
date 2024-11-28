@@ -98,7 +98,7 @@ func (server *Server) addCartItem(c *gin.Context) {
 	}
 
 	//mark reserved
-	_, err = query.ReserveItem(ctx, inventoryItem.InventoryID)
+	_, err = query.ReserveItem(ctx, inventoryItem.InventoryItemID)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"status": "Failed to reserve item."})
 		return
@@ -107,7 +107,7 @@ func (server *Server) addCartItem(c *gin.Context) {
 	//create shopping cart Item
 	params2 := db.CreateShoppingCartItemParams{
 		CartID:          payload.CartID,
-		InventoryItemID: inventoryItem.InventoryID,
+		InventoryItemID: inventoryItem.InventoryItemID,
 	}
 	cartItem, err := query.CreateShoppingCartItem(ctx, params2)
 	if err != nil {
@@ -115,7 +115,7 @@ func (server *Server) addCartItem(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "Cart item added successfully", "CartItemID": cartItem.ShoppingCartItemID, "InventoryItemID": inventoryItem.InventoryID})
+	c.JSON(http.StatusOK, gin.H{"status": "Cart item added successfully", "CartItemID": cartItem.ShoppingCartItemID, "InventoryItemID": inventoryItem.InventoryItemID})
 	conn.Commit(ctx)
 }
 
@@ -188,23 +188,23 @@ func (server *Server) cancelShoppingCart(c *gin.Context) {
 	query = query.WithTx(conn)
 
 	//mark all items as available
-	_, err = query.FreeAllCartItems(ctx, payload.CartID)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"status": "Failed to free inventory items."})
-		return
-	}
+	_, _ = query.FreeAllCartItems(ctx, payload.CartID)
+	// if err != nil {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to free inventory items."})
+	// 	return
+	// }
 	//increment stock in inventory
 
 	//delete all cart items DONE
-	_, err = query.DeleteAllCartItems(ctx, payload.CartID)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"status": "Failed to delete cart items."})
-		return
-	}
+	_, _ = query.DeleteAllCartItems(ctx, payload.CartID)
+	// if err != nil {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to delete cart items."})
+	// 	return
+	// }
 	//delete cart
 	_, err = query.DeleteCart(ctx, payload.CartID)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"status": "Failed to delete cart."})
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to delete cart."})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "Cart deleted successfully"})

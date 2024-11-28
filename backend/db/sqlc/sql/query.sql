@@ -15,7 +15,7 @@ INSERT INTO ShoppingCart (account_id)
 VALUES ($1) RETURNING *;
 
 -- name: GetAllShoppingCartItems :many
-SELECT *
+SELECT i.unit_price, ii.inventory_item_id
 FROM ShoppingCartItems AS sci
 INNER JOIN InventoryItems AS ii ON sci.inventory_item_id = ii.inventory_item_id
 INNER JOIN Inventory AS i ON ii.inventory_id = i.inventory_id
@@ -23,19 +23,19 @@ WHERE sci.cart_id = $1;
 
 -- name: GetAvailableInventoryItem :one
 SELECT * FROM InventoryItems
-WHERE inventory_item_id = $1
-AND reserved = 0 LIMIT 1;
+WHERE inventory_id = $1
+AND reserved = false LIMIT 1;
 
 -- name: GetInventoryItemByID :one
 SELECT * FROM InventoryItems
 WHERE inventory_item_id = $1 LIMIT 1;
 
 -- name: ReserveItem :one
-UPDATE InventoryItems SET reserved = 1
+UPDATE InventoryItems SET reserved = true
 WHERE inventory_item_id = $1 RETURNING *;
 
 -- name: FreeItem :one
-UPDATE InventoryItems SET reserved = 0
+UPDATE InventoryItems SET reserved = false
 WHERE inventory_item_id = $1 RETURNING *;
 
 -- name: DecrementInventoryStock :one
@@ -64,10 +64,12 @@ WHERE cart_id = $1 RETURNING *;
 
 -- name: FreeAllCartItems :one
 UPDATE InventoryItems AS ii
-SET reserved = 0
+SET reserved = false
 FROM ShoppingCartItems AS sci
 WHERE ii.inventory_item_id = sci.inventory_item_id
-AND sci.cart_id = $1 RETURNING *;
+AND sci.cart_id = $1
+AND EXISTS (SELECT 1 FROM ShoppingCartItems WHERE cart_id = $1)
+RETURNING ii.*;
 
 -- name: GetShoppingCartItemsWithPrice :many
 SELECT 

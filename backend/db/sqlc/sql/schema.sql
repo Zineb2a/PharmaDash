@@ -62,11 +62,11 @@ CREATE TABLE IF NOT EXISTS ShoppingCartItems (
 
 CREATE TABLE IF NOT EXISTS QuotationRequests (
     quotation_id SERIAL PRIMARY KEY,
-    total_cost NUMERIC,
+    total_cost FLOAT,
     delivery_frequency TEXT,
     destination TEXT,
     special_handling TEXT,
-    insurance NUMERIC,
+    insurance FLOAT,
     include_insurance BOOLEAN,
     cart_id INTEGER,
     FOREIGN KEY (cart_id) REFERENCES ShoppingCart(cart_id)

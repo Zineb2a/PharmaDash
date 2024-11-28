@@ -2,7 +2,7 @@ package server
 
 import (
 	"context"
-	"database/sql"
+	//"database/sql"
 
 	//"encoding/json"
 	//"io"
@@ -14,9 +14,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgtype"
-
 	//"github.com/shopspring/decimal"
-	"math/big"
 )
 
 type QuotationResponse struct {
@@ -28,14 +26,12 @@ type QuotationResponse struct {
 
 // Contains specifications of the delivery service
 type QuotationRequest struct {
-	QuotationID       int32          `json:"quotation_id"` // to keep track of which quotation was reufsed or accepted
-	TotalCost         float64        `json:"total_cost"`
-	DeliveryFrequency pgtype.Text    `json:"delivery_frequency"`
-	Destination       pgtype.Text    `json:"destination"`
-	SpecialHandling   pgtype.Text    `json:"special_handling,omitempty"`
-	Insurance         pgtype.Numeric `json:"insurance"`
-	IncludeInsurance  bool           `json:"include_insurance"`
-	CartID            int32          `json:"cart_id"`
+	DeliveryFrequency string `json:"delivery_frequency"`
+	Destination       string `json:"destination"`
+	SpecialHandling   string `json:"special_handling,omitempty"`
+	Insurance         int32  `json:"insurance"`
+	IncludeInsurance  bool   `json:"include_insurance"`
+	CartID            int32  `json:"cart_id"`
 }
 
 func (server *Server) CreateDeliveryQuotation(c *gin.Context) {
@@ -71,7 +67,11 @@ func (server *Server) CreateDeliveryQuotation(c *gin.Context) {
 	}
 
 	// extract items from shopping cart
+	//println(dbShoppingCart.CartID)
 	cartItems, err := query.GetAllShoppingCartItems(ctx, dbShoppingCart.CartID)
+	for _, item := range cartItems {
+		println(item.UnitPrice)
+	}
 	if err != nil || len(cartItems) == 0 {
 		c.JSON(http.StatusOK, gin.H{"status": "Cart is empty. No cart items found."})
 		return
@@ -82,13 +82,13 @@ func (server *Server) CreateDeliveryQuotation(c *gin.Context) {
 	existingQuotation, err := query.GetQuotationByCartID(ctx, pgtype.Int4{Int32: req.CartID})
 
 	if err != nil {
-		if err == sql.ErrNoRows {
-			// No existing quotation found, proceed to create a new one
-		} else {
-			// Other database error occurred
-			c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to fetch existing quotation."})
-			return
-		}
+		// if err == sql.ErrNoRows {
+		// 	// No existing quotation found, proceed to create a new one
+		// } else {
+		// 	// Other database error occurred
+		// 	c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to fetch existing quotation."})
+		// 	return
+		// }
 	} else {
 		if existingQuotation.QuotationID != 0 {
 			// Existing quotation found, delete it as a new one is being generated
@@ -118,30 +118,27 @@ func (server *Server) CreateDeliveryQuotation(c *gin.Context) {
 
 	totalCost += deliveryFee
 
-	pgNumericInsurance := createPgNumeric(insuranceCost)
-	pgNumericTotalCost := createPgNumeric(totalCost)
-
 	createQuotationParams := db.CreateQuotationParams{
-		TotalCost:         pgNumericTotalCost,
-		DeliveryFrequency: req.DeliveryFrequency,
-		Destination:       req.Destination,
-		SpecialHandling:   req.SpecialHandling,
-		Insurance:         pgNumericInsurance,
+		TotalCost:         pgtype.Float8{Float64: totalCost},
+		DeliveryFrequency: pgtype.Text{String: req.DeliveryFrequency},
+		Destination:       pgtype.Text{String: req.Destination},
+		SpecialHandling:   pgtype.Text{String: req.SpecialHandling},
+		Insurance:         pgtype.Float8{Float64: totalCost},
 		IncludeInsurance:  pgtype.Bool{Bool: true, Valid: true},
 	}
 
 	// Call CreateQuotation
-	createdQuotation, err := query.CreateQuotation(ctx, createQuotationParams)
+	_, err = query.CreateQuotation(ctx, createQuotationParams)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to create quotation."})
 		return
 	}
 	// Type assertion for TotalCost
-	totalCost, acc := createdQuotation.TotalCost.Int.Float64()
-	if acc != big.Exact {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "Invalid TotalCost type."})
-		return
-	}
+	// totalCost, acc := createdQuotation.TotalCost.Float64
+	// if acc != big.Exact {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"status": "Invalid TotalCost type."})
+	// 	return
+	// }
 
 	// Set the struct
 	quotation := QuotationResponse{
@@ -156,12 +153,12 @@ func (server *Server) CreateDeliveryQuotation(c *gin.Context) {
 
 }
 
-// helper function
-func createPgNumeric(value float64) pgtype.Numeric {
-	bigInt := new(big.Int)
-	bigInt.SetInt64(int64(value * 100)) // Convert to cents to avoid float precision issues
-	return pgtype.Numeric{Int: bigInt, Valid: true}
-}
+// // helper function
+// func createPgNumeric(value float64) pgtype.Numeric {
+// 	bigInt := new(big.Int)
+// 	bigInt.SetInt64(int64(value * 100)) // Convert to cents to avoid float precision issues
+// 	return pgtype.Numeric{Int: bigInt, Valid: true}
+// }
 
 func (server *Server) DeleteQuotation(c *gin.Context) {
 	var req struct {
