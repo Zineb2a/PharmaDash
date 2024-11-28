@@ -1,13 +1,12 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import './LoginPopup.css';
 import { assets } from '../../assets/assets';
-import { StoreContext } from '../../Context/StoreContext';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
 const LoginPopup = ({ setShowLogin }) => {
-    const { setToken, url, loadCartData } = useContext(StoreContext);
     const [currState, setCurrState] = useState("Sign Up");
+    const [token, setToken] = useState(localStorage.getItem("token") || null);
     const [data, setData] = useState({
         name: "",
         lastName: "",
@@ -16,7 +15,7 @@ const LoginPopup = ({ setShowLogin }) => {
         phoneNumber: "",
         address: "",
     });
-
+    const url = "http://localhost:3000"; 
     const onChangeHandler = (event) => {
         const { name, value } = event.target;
         setData((prevData) => ({ ...prevData, [name]: value }));
@@ -60,9 +59,9 @@ const LoginPopup = ({ setShowLogin }) => {
             const response = await axios.post(new_url, payload, { withCredentials: true });
             if (response.data.status === "success") {
                 toast.success("Login successful!");
-                setToken(response.data.token); // Save token
+                const newToken = response.data.token;
+                setToken(newToken); // Save token
                 localStorage.setItem("token", response.data.token);
-                loadCartData({ token: response.data.token });
                 setShowLogin(false); // Close popup
             } else {
                 toast.error(response.data.status);
