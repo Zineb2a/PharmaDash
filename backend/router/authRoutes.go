@@ -66,14 +66,14 @@ func (server *Server) RegisterNewAccount(c *gin.Context) {
 	//if not hash password
 	hash, err := util.HashPassword(createParams.Password)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "Could not create account, try later."})
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Could not create account, try later. Hash"})
 		return
 	}
 	createParams.Password = hash
 
 	_, err = query.CreateUser(ctx, createParams)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "Could not create account, try later."})
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Could not create account, try later. DB connection"})
 		return
 	}
 
