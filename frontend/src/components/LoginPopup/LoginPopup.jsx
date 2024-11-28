@@ -6,7 +6,6 @@ import { toast } from 'react-toastify';
 
 const LoginPopup = ({ setShowLogin }) => {
     const [currState, setCurrState] = useState("Sign Up");
-    const [token, setToken] = useState(localStorage.getItem("token") || null);
     const [data, setData] = useState({
         name: "",
         lastName: "",
@@ -15,16 +14,20 @@ const LoginPopup = ({ setShowLogin }) => {
         phoneNumber: "",
         address: "",
     });
+
+    // Backend URL
     const url = "http://localhost:3000"; 
+
     const onChangeHandler = (event) => {
         const { name, value } = event.target;
         setData((prevData) => ({ ...prevData, [name]: value }));
     };
 
+    // Registration function
     const onRegister = async () => {
-        const new_url = `${url}/user/register`;
+        const new_url = `${url}/user/register`; // Corrected template literal
         const payload = {
-            RegisterMode: "client", //Only clients can register
+            RegisterMode: "client", // Only clients can register
             UserData: {
                 Name: data.name || null,
                 LastName: data.lastName || null,
@@ -37,19 +40,21 @@ const LoginPopup = ({ setShowLogin }) => {
 
         try {
             const response = await axios.post(new_url, payload);
-            if (response.data.status === "success") {
+            if (response.data.status === "account created") {
                 toast.success("Registration successful!");
                 setCurrState("Login"); // Redirect to login after successful registration
             } else {
                 toast.error(response.data.status);
             }
         } catch (error) {
+            console.error("Registration error:", error);
             toast.error("An error occurred during registration. Please try again.");
         }
     };
 
+    // Login function
     const onLogin = async () => {
-        const new_url = `${url}/user/login`;
+        const new_url = `${url}/user/login`; // Corrected template literal
         const payload = {
             Email: data.email,
             Password: data.password,
@@ -57,20 +62,23 @@ const LoginPopup = ({ setShowLogin }) => {
 
         try {
             const response = await axios.post(new_url, payload, { withCredentials: true });
-            if (response.data.status === "success") {
+            if (response.data.status === "Authentication successful") {
                 toast.success("Login successful!");
                 const newToken = response.data.token;
-                setToken(newToken); // Save token
-                localStorage.setItem("token", response.data.token);
+                localStorage.setItem("token", newToken); // Save token to localStorage
+
                 setShowLogin(false); // Close popup
+                window.location.reload(); // Reload the page
             } else {
                 toast.error(response.data.status);
             }
         } catch (error) {
+            console.error("Login error:", error);
             toast.error("An error occurred during login. Please try again.");
         }
     };
 
+    // Form submission handler
     const onSubmit = async (e) => {
         e.preventDefault();
         if (currState === "Login") {
@@ -96,6 +104,7 @@ const LoginPopup = ({ setShowLogin }) => {
                                 value={data.name}
                                 type="text"
                                 placeholder="First Name"
+                                required
                             />
                             <input
                                 name="lastName"
@@ -103,6 +112,7 @@ const LoginPopup = ({ setShowLogin }) => {
                                 value={data.lastName}
                                 type="text"
                                 placeholder="Last Name"
+                                required
                             />
                             <input
                                 name="phoneNumber"
@@ -110,6 +120,7 @@ const LoginPopup = ({ setShowLogin }) => {
                                 value={data.phoneNumber}
                                 type="text"
                                 placeholder="Phone Number"
+                                required
                             />
                             <input
                                 name="address"
@@ -117,6 +128,7 @@ const LoginPopup = ({ setShowLogin }) => {
                                 value={data.address}
                                 type="text"
                                 placeholder="Address"
+                                required
                             />
                         </>
                     )}
@@ -137,7 +149,7 @@ const LoginPopup = ({ setShowLogin }) => {
                         required
                     />
                 </div>
-                <button>{currState === "Login" ? "Login" : "Create account"}</button>
+                <button>{currState === "Login" ? "Login" : "Create Account"}</button>
                 <div className="login-popup-condition">
                     <input type="checkbox" required />
                     <p>By continuing, I agree to the terms of use & privacy policy.</p>
