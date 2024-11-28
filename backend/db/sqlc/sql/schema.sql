@@ -21,16 +21,16 @@ CREATE TABLE IF NOT EXISTS Inventory (
   item_name varchar(100) NOT NULL,
   item_description varchar(80) NOT NULL,
   medication_name varchar(50) NOT NULL,
-  unit_price money NOT NULL,
+  unit_price FLOAT NOT NULL,
   stock_quantity int NOT NULL,
-  otc bit NOT NULL,
+  otc BOOLEAN NOT NULL,
   FOREIGN KEY (pharmacy_id) REFERENCES Pharmacies(pharmacy_id)
 );
 
 CREATE TABLE IF NOT EXISTS InventoryItems (
   inventory_item_id SERIAL PRIMARY KEY,
   inventory_id int NOT NULL,
-  reserved bit NOT NULL,
+  reserved BOOLEAN NOT NULL,
   FOREIGN KEY (inventory_id) REFERENCES Inventory(inventory_id)
 );
 

@@ -78,6 +78,11 @@ func GetNewServer() (*Server, error) {
 		{
 			feedback.POST("/feedback", server.mustAuthChecker, server.AddFeedback)
 		}
+		inventory := router.Group("/inventory")
+		{
+			inventory.POST("/add_item", server.AddItemToInventory)
+			inventory.GET("/items", server.getAllItems)
+		}
 	}
 	return server, nil
 }

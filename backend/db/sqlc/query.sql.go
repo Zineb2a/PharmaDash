@@ -43,6 +43,55 @@ func (q *Queries) AddFeedback(ctx context.Context, arg AddFeedbackParams) (Feedb
 	return i, err
 }
 
+const addItemToInventory = `-- name: AddItemToInventory :one
+INSERT INTO Inventory (pharmacy_id, item_name, item_description, medication_name, unit_price, stock_quantity, otc)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING inventory_id
+`
+
+type AddItemToInventoryParams struct {
+	PharmacyID      int32
+	ItemName        string
+	ItemDescription string
+	MedicationName  string
+	UnitPrice       float64
+	StockQuantity   int32
+	Otc             bool
+}
+
+func (q *Queries) AddItemToInventory(ctx context.Context, arg AddItemToInventoryParams) (int32, error) {
+	row := q.db.QueryRow(ctx, addItemToInventory,
+		arg.PharmacyID,
+		arg.ItemName,
+		arg.ItemDescription,
+		arg.MedicationName,
+		arg.UnitPrice,
+		arg.StockQuantity,
+		arg.Otc,
+	)
+	var inventory_id int32
+	err := row.Scan(&inventory_id)
+	return inventory_id, err
+}
+
+const addLineItemToInventory = `-- name: AddLineItemToInventory :one
+INSERT INTO InventoryItems (inventory_id, reserved)
+VALUES ($1, $2)
+RETURNING inventory_item_id, inventory_id, reserved
+`
+
+type AddLineItemToInventoryParams struct {
+	InventoryID int32
+	Reserved    bool
+}
+
+func (q *Queries) AddLineItemToInventory(ctx context.Context, arg AddLineItemToInventoryParams) (Inventoryitem, error) {
+	row := q.db.QueryRow(ctx, addLineItemToInventory, arg.InventoryID, arg.Reserved)
+	var i Inventoryitem
+	err := row.Scan(&i.InventoryItemID, &i.InventoryID, &i.Reserved)
+	return i, err
+}
+
 const assignOrderToDriver = `-- name: AssignOrderToDriver :exec
 UPDATE Orders
 SET driver_id = $1, order_status = 'Out for delivery' -- The account ID of the driver
@@ -316,7 +365,7 @@ type FreeAllCartItemsRow struct {
 	InventoryItemID    int32
 	InventoryItemID_2  int32
 	InventoryID        int32
-	Reserved           pgtype.Bits
+	Reserved           bool
 }
 
 func (q *Queries) FreeAllCartItems(ctx context.Context, cartID int32) (FreeAllCartItemsRow, error) {
@@ -455,15 +504,15 @@ type GetAllShoppingCartItemsRow struct {
 	InventoryItemID    int32
 	InventoryItemID_2  int32
 	InventoryID        int32
-	Reserved           pgtype.Bits
+	Reserved           bool
 	InventoryID_2      int32
 	PharmacyID         int32
 	ItemName           string
 	ItemDescription    string
 	MedicationName     string
-	UnitPrice          pgtype.Numeric
+	UnitPrice          float64
 	StockQuantity      int32
-	Otc                pgtype.Bits
+	Otc                bool
 }
 
 func (q *Queries) GetAllShoppingCartItems(ctx context.Context, cartID int32) ([]GetAllShoppingCartItemsRow, error) {
@@ -718,7 +767,7 @@ type GetShoppingCartItemsWithPriceRow struct {
 	CartID             int32
 	ShoppingCartItemID int32
 	InventoryItemID    int32
-	UnitPrice          pgtype.Numeric
+	UnitPrice          float64
 }
 
 func (q *Queries) GetShoppingCartItemsWithPrice(ctx context.Context, cartID int32) ([]GetShoppingCartItemsWithPriceRow, error) {

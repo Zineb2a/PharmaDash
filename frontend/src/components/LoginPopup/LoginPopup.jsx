@@ -52,7 +52,8 @@ const LoginPopup = ({ setShowLogin }) => {
     };
 
     const onLogin = async () => {
-        const new_url = `${url}/user/login`;
+        //const new_url = `${url}/user/login`;
+        const new_url = `http://localhost:3000/user/login`;
         const payload = {
             Email: data.email,
             Password: data.password,

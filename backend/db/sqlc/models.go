@@ -34,15 +34,15 @@ type Inventory struct {
 	ItemName        string
 	ItemDescription string
 	MedicationName  string
-	UnitPrice       pgtype.Numeric
+	UnitPrice       float64
 	StockQuantity   int32
-	Otc             pgtype.Bits
+	Otc             bool
 }
 
 type Inventoryitem struct {
 	InventoryItemID int32
 	InventoryID     int32
-	Reserved        pgtype.Bits
+	Reserved        bool
 }
 
 type Order struct {

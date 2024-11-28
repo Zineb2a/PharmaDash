@@ -230,6 +230,55 @@ func (server *Server) getAllItems(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"Items": dbInventory})
 }
 
-func (server *Server) addItemToInventory(c *gin.Context) {
+func (server *Server) AddItemToInventory(c *gin.Context) {
+	jsonData, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Server error."})
+		return
+	}
+	var payload util.AddItemToInventory
+	err = json.Unmarshal(jsonData, &payload)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Invalid json payload format."})
+		return
+	}
 
+	ctx := context.Background()
+	conn, err := server.pool.Acquire(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Server error."})
+		return
+	}
+	defer conn.Release()
+	query := db.New(conn)
+
+	params := db.AddItemToInventoryParams{
+		PharmacyID:      payload.PharmacyID,
+		ItemName:        payload.Item_Name,
+		ItemDescription: payload.Item_Description,
+		MedicationName:  payload.Medication_Name,
+		UnitPrice:       float64(payload.Unit_price),
+		StockQuantity:   payload.Stock_Quantity,
+		Otc:             payload.OTC,
+	}
+
+	NewItemID, err := query.AddItemToInventory(ctx, params)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Server error, failed to create new Item."})
+		return
+	}
+
+	for i := 0; i < int(payload.Stock_Quantity); i++ {
+		params := db.AddLineItemToInventoryParams{
+			InventoryID: NewItemID,
+			Reserved:    false,
+		}
+		_, err := query.AddLineItemToInventory(ctx, params)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"status": "Server error, failed to create new Line Item."})
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "Item creation successful", "cart_id": NewItemID})
 }

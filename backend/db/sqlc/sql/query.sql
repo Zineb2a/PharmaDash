@@ -183,3 +183,13 @@ SELECT * FROM Orders;
 -- name: GetAllInventoryItems :many
 SELECT * FROM Inventory;
 
+-- name: AddItemToInventory :one
+INSERT INTO Inventory (pharmacy_id, item_name, item_description, medication_name, unit_price, stock_quantity, otc)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING inventory_id;
+
+-- name: AddLineItemToInventory :one
+INSERT INTO InventoryItems (inventory_id, reserved)
+VALUES ($1, $2)
+RETURNING *;
+

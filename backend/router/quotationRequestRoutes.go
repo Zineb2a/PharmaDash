@@ -102,7 +102,7 @@ func (server *Server) CreateDeliveryQuotation(c *gin.Context) {
 
 	totalCost := 0.0
 	for _, item := range cartItems {
-		price, _ := item.UnitPrice.Int.Float64()
+		price := item.UnitPrice
 		totalCost += price
 	}
 
