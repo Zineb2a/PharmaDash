@@ -377,6 +377,37 @@ func (q *Queries) GetAllClientOrders(ctx context.Context, accountID int32) ([]Or
 	return items, nil
 }
 
+const getAllOrders = `-- name: GetAllOrders :many
+SELECT order_id, account_id, quotation_id, order_status, created_at, driver_id FROM Orders
+`
+
+func (q *Queries) GetAllOrders(ctx context.Context) ([]Order, error) {
+	rows, err := q.db.Query(ctx, getAllOrders)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Order
+	for rows.Next() {
+		var i Order
+		if err := rows.Scan(
+			&i.OrderID,
+			&i.AccountID,
+			&i.QuotationID,
+			&i.OrderStatus,
+			&i.CreatedAt,
+			&i.DriverID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAllShoppingCartItems = `-- name: GetAllShoppingCartItems :many
 SELECT shopping_cart_item_id, cart_id, sci.inventory_item_id, ii.inventory_item_id, ii.inventory_id, reserved, i.inventory_id, pharmacy_id, item_name, item_description, medication_name, unit_price, stock_quantity, otc
 FROM ShoppingCartItems AS sci

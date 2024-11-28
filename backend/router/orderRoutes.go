@@ -107,7 +107,7 @@ func (server *Server) CreateOrder(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "Order created successfully", "order_id": order.OrderID})
 }
 
-func (server *Server) GetAllOrders(c *gin.Context) {
+func (server *Server) GetAllOrdersClient(c *gin.Context) {
 	payload := c.MustGet("auth_payload").(*token.Payload)
 	email := payload.Username
 
@@ -127,6 +127,25 @@ func (server *Server) GetAllOrders(c *gin.Context) {
 	}
 
 	dbOrders, err := query.GetAllClientOrders(ctx, dbUser.AccountID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Server error."})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"orders": dbOrders})
+}
+
+func (server *Server) GetAllOrdersAdmin(c *gin.Context) {
+	ctx := context.Background()
+	conn, err := server.pool.Acquire(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Server error."})
+		return
+	}
+	defer conn.Release()
+	query := db.New(conn)
+
+	dbOrders, err := query.GetAllOrders(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "Server error."})
 		return

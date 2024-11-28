@@ -176,3 +176,7 @@ RETURNING feedback_id, order_id, client_id, rating, comment, created_at;
 
 -- name: GetOrderStatus :one
 SELECT order_status FROM Orders WHERE order_id = $1;
+
+-- name: GetAllOrders :many
+SELECT * FROM Orders;
+

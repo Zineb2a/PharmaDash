@@ -63,7 +63,8 @@ func GetNewServer() (*Server, error) {
 		order := router.Group("/order")
 		{
 			order.POST("/create_order", server.CreateOrder)
-			order.GET("/get_orders", server.mustAuthChecker, server.GetAllOrders)
+			order.GET("/get_orders_client", server.mustAuthChecker, server.GetAllOrdersClient)
+			order.GET("/get_orders", server.GetAllOrdersAdmin)
 		}
 		feedback := router.Group("/feedback")
 		{
