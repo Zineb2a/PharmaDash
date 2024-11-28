@@ -5,16 +5,17 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 
 const List = () => {
-  const [list, setList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [list, setList] = useState([]); 
 
   const fetchList = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get(`http://localhost:3000/inventory/items`);
+      const response = await axios.get('http://localhost:3000/inventory/items');
+      console.log(response.data);  
       setIsLoading(false);
       if (response.data.success) {
-        setList(response.data.data);
+        setList(response.data.data);  
       } else {
         toast.error('Error fetching the list.');
       }
@@ -24,25 +25,13 @@ const List = () => {
     }
   };
 
-  const confirmAndRemove = async (foodId) => {
-    if (window.confirm('Are you sure you want to delete this item?')) {
-      try {
-        const response = await axios.post(`${url}/api/food/remove`, { id: foodId });
-        if (response.data.success) {
-          toast.success(response.data.message);
-          fetchList();
-        } else {
-          toast.error('Error removing the item.');
-        }
-      } catch (error) {
-        toast.error('Something went wrong. Please try again.');
-      }
-    }
-  };
-
   useEffect(() => {
     fetchList();
   }, []);
+
+  useEffect(() => {
+    console.log(list); 
+  }, [list]);
 
   return (
     <div className="list-container">
@@ -54,28 +43,22 @@ const List = () => {
       ) : (
         <div className="list-table">
           <div className="list-table-format title">
-            <b>Image</b>
-            <b>Name</b>
-            <b>Category</b>
+            <b>Item Name</b>
+            <b>Medication Name</b>
+            <b>Item Description</b>
             <b>Price</b>
             <b>Quantity</b>
-            <b>Prescription</b>
-            <b>Action</b>
+            <b>OTC</b>
           </div>
           {list.map((item, index) => (
             <div key={index} className="list-table-format">
-              <img src={`${url}/images/` + item.image} alt={item.name} />
-              <p>{item.name}</p>
-              <p>{item.category}</p>
-              <p>
-                {currency}
-                {item.price}
-              </p>
-              <p>{item.quantity}</p>
-              <p>{item.needsPrescription ? 'Yes' : 'No'}</p>
-              <p className="cursor" onClick={() => confirmAndRemove(item._id)}>
-                x
-              </p>
+              {/* Display item details */}
+              <p>{item.ItemName}</p>  
+              <p>{item.MedicationName}</p>  
+              <p>{item.ItemDescription}</p> 
+              <p>{currency}{item.UnitPrice}</p>  
+              <p>{item.StockQuantity}</p>  
+              <p>{item.OTC ? 'Yes' : 'No'}</p>  
             </div>
           ))}
         </div>
