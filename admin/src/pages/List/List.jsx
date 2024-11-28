@@ -11,7 +11,7 @@ const List = () => {
   const fetchList = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get(`${url}/api/food/list`);
+      const response = await axios.get(`http://localhost:3000/inventory/items`);
       setIsLoading(false);
       if (response.data.success) {
         setList(response.data.data);

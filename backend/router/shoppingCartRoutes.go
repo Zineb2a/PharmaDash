@@ -227,7 +227,7 @@ func (server *Server) getAllItems(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"Items": dbInventory})
+	c.JSON(http.StatusOK, gin.H{"success": true, "data": dbInventory})
 }
 
 func (server *Server) AddItemToInventory(c *gin.Context) {
