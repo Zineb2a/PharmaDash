@@ -49,7 +49,7 @@ func (server *Server) RegisterNewAccount(c *gin.Context) {
 	query := db.New(conn)
 
 	//make sure all the necessary info is there
-	if createParams.Name == "" || createParams.LastName == "" || createParams.Password == "" || createParams.Email.String == "" {
+	if createParams.Name == "" || createParams.LastName == "" || createParams.Password == "" || createParams.Email.String == "" || createParams.Address.String == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "Invalid data"})
 		return
 	}
