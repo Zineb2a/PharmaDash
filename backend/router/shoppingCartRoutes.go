@@ -103,17 +103,6 @@ func (server *Server) addCartItem(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "Failed to reserve item."})
 		return
 	}
-	//decrement stock in inventory
-
-	// params1 := db.DecrementInventoryStockParams{
-	// 	StockQuantity: 1,
-	// 	InventoryID:   inventoryItem.InventoryID,
-	// }
-	// _, err = query.DecrementInventoryStock(ctx, params1)
-	// if err != nil {
-	// 	c.JSON(http.StatusOK, gin.H{"status": "Failed to process request."})
-	// 	return
-	// }
 
 	//create shopping cart Item
 	params2 := db.CreateShoppingCartItemParams{
@@ -155,29 +144,12 @@ func (server *Server) removeCartItem(c *gin.Context) {
 	query := db.New(nil)
 	query = query.WithTx(conn)
 
-	// inventoryItem, err := query.GetInventoryItemByID(ctx, payload.InventoryItemID)
-	// if err != nil {
-	// 	c.JSON(http.StatusOK, gin.H{"status": "Failed to reserve item."})
-	// 	return
-	// }
-
 	//mark reserved
 	_, err = query.FreeItem(ctx, payload.InventoryItemID)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"status": "Failed to reserve item."})
 		return
 	}
-
-	// //decrement stock in inventory
-	// params := db.IncrementInventoryStockParams{
-	// 	StockQuantity: 1,
-	// 	InventoryID:   inventoryItem.InventoryID,
-	// }
-	// _, err = query.IncrementInventoryStock(ctx, params)
-	// if err != nil {
-	// 	c.JSON(http.StatusOK, gin.H{"status": "Failed to process request."})
-	// 	return
-	// }
 
 	//Delete cart item
 	_, err = query.DeleteCartItem(ctx, payload.CartItemID)
@@ -237,4 +209,27 @@ func (server *Server) cancelShoppingCart(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "Cart deleted successfully"})
 	conn.Commit(ctx)
+}
+
+func (server *Server) getAllItems(c *gin.Context) {
+	ctx := context.Background()
+	conn, err := server.pool.Acquire(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Server error."})
+		return
+	}
+	defer conn.Release()
+	query := db.New(conn)
+
+	dbInventory, err := query.GetAllInventoryItems(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Database error."})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"Items": dbInventory})
+}
+
+func (server *Server) addItemToInventory(c *gin.Context) {
+
 }

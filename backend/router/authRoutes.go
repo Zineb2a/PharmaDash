@@ -132,7 +132,7 @@ func (server *Server) Login(c *gin.Context) {
 		}
 		//modify for local storage
 		c.SetCookie("token", token, 3600, "", "", false, true)
-		c.JSON(http.StatusOK, gin.H{"status": "Authentication successful"})
+		c.JSON(http.StatusOK, gin.H{"status": "success"})
 		return
 	}
 }

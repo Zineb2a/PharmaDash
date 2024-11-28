@@ -23,7 +23,8 @@ const LoginPopup = ({ setShowLogin }) => {
     };
 
     const onRegister = async () => {
-        const new_url = `${url}/user/register`;
+        //const new_url = `${url}/user/register`;
+        const new_url = `http://localhost:3000/user/register`;
         const payload = {
             RegisterMode: "client", //Only clients can register
             UserData: {
@@ -45,6 +46,7 @@ const LoginPopup = ({ setShowLogin }) => {
                 toast.error(response.data.status);
             }
         } catch (error) {
+            console.log(error)
             toast.error("An error occurred during registration. Please try again.");
         }
     };

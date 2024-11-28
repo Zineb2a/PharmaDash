@@ -180,3 +180,6 @@ SELECT order_status FROM Orders WHERE order_id = $1;
 -- name: GetAllOrders :many
 SELECT * FROM Orders;
 
+-- name: GetAllInventoryItems :many
+SELECT * FROM Inventory;
+
