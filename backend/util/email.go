@@ -5,7 +5,7 @@ import (
 	"net/smtp"
 )
 
-func SendEmail(to, subject, body string) string {
+func SendEmail(to, subject, body string) (erroryes error) {
 	from := "pharmadash343@gmail.com"
 	pass := "pharmadash343!!"
 
@@ -24,9 +24,9 @@ func SendEmail(to, subject, body string) string {
 	err := smtp.SendMail(smtpServer+":"+smtpPort, auth, from, []string{to}, msg)
 	if err != nil {
 		log.Printf("Failed to send email to %s: %v", to, err)
-		// Log failure but return success
+		return err
 	}
 
 	log.Printf("Email sent successfully to %s", to)
-	return "Email sent successfully!"
+	return nil
 }
