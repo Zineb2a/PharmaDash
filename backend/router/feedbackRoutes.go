@@ -5,8 +5,9 @@ import (
 	"net/http"
 	db "pharmaDashServer/db/sqlc"
 	"pharmaDashServer/token"
-	"pharmaDashServer/util"
-	"strconv"
+
+	//"pharmaDashServer/util"
+	//"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -55,6 +56,11 @@ func (server *Server) AddFeedback(c *gin.Context) {
 	}
 
 	// 3. Add feedback to the database
+	if req.Rating > 5 || req.Rating <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "Invalid rating. Rating must be between 0 and 5 inclusively."})
+		return
+	}
+
 	feedback, err := query.AddFeedback(ctx, db.AddFeedbackParams{
 		OrderID:  req.OrderID,
 		ClientID: client.AccountID,
@@ -62,17 +68,17 @@ func (server *Server) AddFeedback(c *gin.Context) {
 		Comment:  pgtype.Text{String: req.Comment, Valid: true}, //had error for type mismatch
 	})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to add feedback."})
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to add feedback.", "error": err.Error()})
 		return
 	}
 
 	// 4. Send acknowledgment email
-	feedbackEmailBody := "Thank you for your feedback!\n\nYour feedback:\n" + "Rating: " + strconv.Itoa(int(req.Rating)) + "\n" + "Comment: " + req.Comment
-	err = util.SendEmail(email, "Thank you for your feedback!", feedbackEmailBody)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to send acknowledgment email."})
-		return
-	}
+	// feedbackEmailBody := "Thank you for your feedback!\n\nYour feedback:\n" + "Rating: " + strconv.Itoa(int(req.Rating)) + "\n" + "Comment: " + req.Comment
+	// err = util.SendEmail(email, "Thank you for your feedback!", feedbackEmailBody)
+	// if err != nil {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to send acknowledgment email."})
+	// 	return
+	// }
 
 	// 5. Respond with success
 	c.JSON(http.StatusOK, gin.H{"status": "Feedback added successfully.", "feedback": feedback})
