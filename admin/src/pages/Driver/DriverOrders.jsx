@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { FaUserTie } from "react-icons/fa"; // Font Awesome Icon
 import "./DriverOrder.css";
 
 const DriverOrder = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [driverName, setDriverName] = useState("Driver"); // Replace with actual driver name logic
 
   // Fetch orders from backend
   const fetchOrders = async () => {
@@ -30,8 +32,10 @@ const DriverOrder = () => {
 
   // Pick up an order
   const selectOrder = async (orderId) => {
+    console.log("Attempting to pick up order with ID:", orderId);
     try {
       const payload = { order_id: orderId };
+      console.log("Payload being sent to /driver_picks_up:", payload);
 
       const response = await axios.post(
         "http://localhost:3000/user/driver_picks_up",
@@ -47,16 +51,20 @@ const DriverOrder = () => {
       console.log("Pickup response:", response.data);
 
       if (response.data.status === "Order picked up successfully.") {
+        console.log("Order successfully picked up:", orderId);
         setOrders((prevOrders) =>
           prevOrders.map((order) =>
             order.OrderID === orderId ? { ...order, OrderStatus: "Out for delivery" } : order
           )
         );
       } else {
-        console.error("Error picking up order:", response.data.status);
+        console.error("Error picking up order (API response):", response.data.status);
       }
     } catch (error) {
-      console.error("Error picking up order:", error.response?.data || error.message);
+      console.error("Error picking up order (exception):", error.response?.data || error.message);
+      if (error.response) {
+        console.log("Full server response:", error.response.data);
+      }
     }
   };
 
@@ -65,7 +73,7 @@ const DriverOrder = () => {
     try {
       console.log("Attempting to confirm delivery for order:", orderId);
 
-      const payload = { order_id: orderId }; 
+      const payload = { order_id: orderId };
 
       const response = await axios.post(
         "http://localhost:3000/user/driver_confirm_delivery",
@@ -104,12 +112,18 @@ const DriverOrder = () => {
 
   return (
     <div className="driver-orders">
-      <h1>Driver Dashboard</h1>
+      <div className="driver-header">
+        <FaUserTie className="driver-avatar" />
+        <div>
+          <h1>Welcome, {driverName}!</h1>
+          <p>Manage your deliveries with ease.</p>
+        </div>
+      </div>
       <section>
         <h2>Ready Orders</h2>
         <ul>
           {orders
-            .filter((order) => order.OrderStatus === "Ready")
+            .filter((order) => order.OrderStatus === "Created")
             .map((order) => (
               <li key={order.OrderID}>
                 <div>
