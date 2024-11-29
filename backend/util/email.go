@@ -7,7 +7,7 @@ import (
 
 func SendEmail(to, subject, body string) (erroryes error) {
 	from := "pharmadash343@gmail.com"
-	pass := "pharmadash343!!"
+	pass := "jbqr fyfr khhf ypfz"
 
 	// Construct the email message
 	msg := []byte("From: " + from + "\n" +

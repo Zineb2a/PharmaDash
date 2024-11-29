@@ -60,13 +60,15 @@ func (server *Server) ConfirmOrderDelivery(c *gin.Context) {
 	}
 
 	// Send email notification to the user
-	util.SendEmail(userEmail.String, "Your order has been delivered", "Your order has been successfully delivered by driver: "+payload.Username)
-	// 	c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to send confirmation email."})
-	// 	return
-	// }
+	err = util.SendEmail(userEmail.String, "Your order has been delivered", "Your order has been successfully delivered by driver: "+payload.Username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to send confirmation email."})
+		return
+	}
 
 	// Commit the transaction
-	if err := conn.Commit(ctx); err != nil {
+	err = conn.Commit(ctx)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to commit transaction."})
 		return
 	}

@@ -76,11 +76,11 @@ func (server *Server) AddFeedback(c *gin.Context) {
 
 	// 4. Send acknowledgment email
 	feedbackEmailBody := "Thank you for your feedback!\n\nYour feedback:\n" + "Rating: " + strconv.Itoa(int(req.Rating)) + "\n" + "Comment: " + req.Comment
-	util.SendEmail(email, "Thank you for your feedback!", feedbackEmailBody)
-	// if err != nil {
-	// 	c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to send acknowledgment email."})
-	// 	return
-	// }
+	err = util.SendEmail(email, "Thank you for your feedback!", feedbackEmailBody)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to send acknowledgment email."})
+		return
+	}
 
 	// 5. Respond with success
 	c.JSON(http.StatusOK, gin.H{"status": "Feedback added successfully.", "feedback": feedback})
