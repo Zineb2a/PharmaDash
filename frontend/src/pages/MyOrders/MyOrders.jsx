@@ -10,16 +10,18 @@ const MyOrders = () => {
   const {url,token,currency} = useContext(StoreContext);
 
   const fetchOrders = async () => {
-    const response = await axios.post(url+"/api/order/userorders",{},{headers:{token}});
-    setData(response.data.data)
-  }
-
-  useEffect(()=>{
-    if (token) {
-      fetchOrders();
+    try {
+      const response = await axios.post("http://localhost:3000/order/get_orders_client", {}, { headers: { token } });
+      if (response.status === 200) {
+        setData(response.data.data); 
+      } else {
+        console.error("Failed to fetch orders: ", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error fetching orders: ", error);
     }
-  },[token])
-
+  };
+  
   return (
     <div className='my-orders'>
       <h2>My Orders</h2>
