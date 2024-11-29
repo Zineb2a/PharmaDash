@@ -1,78 +1,102 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import "./DriverOrder.css";
 
 const DriverOrder = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Mock data for testing
+  // Fetch orders from backend
+  const fetchOrders = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get("http://localhost:3000/order/get_orders", {
+        withCredentials: true, // Include cookies
+      });
+
+      console.log("Fetched orders:", response.data);
+
+      if (response.data.success) {
+        setOrders(response.data.orders);
+      } else {
+        console.error("Error fetching orders:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching orders:", error.response?.data || error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Pick up an order
+  const selectOrder = async (orderId) => {
+    try {
+      const payload = { OrderID: orderId };
+
+      const response = await axios.post(
+        "http://localhost:3000/user/driver_picks_up",
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      console.log("Pickup response:", response.data);
+
+      if (response.data.status === "Order picked up successfully.") {
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order.OrderID === orderId ? { ...order, OrderStatus: "Out for delivery" } : order
+          )
+        );
+      } else {
+        console.error("Error picking up order:", response.data.status);
+      }
+    } catch (error) {
+      console.error("Error picking up order:", error.response?.data || error.message);
+    }
+  };
+
+  // Confirm delivery
+  const completeDelivery = async (orderId) => {
+    try {
+      console.log("Attempting to confirm delivery for order:", orderId);
+
+      const payload = { OrderID: orderId };
+
+      const response = await axios.post(
+        "http://localhost:3000/user/driver_confirm_delivery",
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      console.log("Delivery confirmation response:", response.data);
+
+      if (response.data.status === "Order delivery confirmed successfully.") {
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order.OrderID === orderId ? { ...order, OrderStatus: "Delivered" } : order
+          )
+        );
+      } else {
+        console.error("Error confirming delivery:", response.data.status);
+      }
+    } catch (error) {
+      console.error("Error confirming delivery:", error.response?.data || error.message);
+    }
+  };
+
   useEffect(() => {
-    const fetchMockOrders = () => {
-      setLoading(true);
-      setTimeout(() => {
-        const mockOrders = [
-          {
-            id: "1",
-            customerName: "John Doe",
-            address: "123 Maple Street, Springfield",
-            phone: "+1 555-1234",
-            status: "ready",
-          },
-          {
-            id: "2",
-            customerName: "Jane Smith",
-            address: "456 Oak Avenue, Metropolis",
-            phone: "+1 555-5678",
-            status: "ready",
-          },
-          {
-            id: "3",
-            customerName: "Alice Johnson",
-            address: "789 Pine Lane, Gotham",
-            phone: "+1 555-8765",
-            status: "ongoing",
-          },
-          {
-            id: "4",
-            customerName: "Mark Brown",
-            address: "321 Cedar Road, Star City",
-            phone: "+1 555-4321",
-            status: "completed",
-          },
-          {
-            id: "5",
-            customerName: "Emma Wilson",
-            address: "654 Birch Boulevard, Central City",
-            phone: "+1 555-3456",
-            status: "ongoing",
-          },
-        ];
-
-        setOrders(mockOrders);
-        setLoading(false);
-      }, 1000); // Simulate network delay
-    };
-
-    fetchMockOrders();
+    fetchOrders();
   }, []);
-
-  // Assign a ready order to the driver
-  const selectOrder = (orderId) => {
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.id === orderId ? { ...order, status: "ongoing" } : order
-      )
-    );
-  };
-
-  // Confirm delivery for an ongoing order
-  const completeDelivery = (orderId) => {
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.id === orderId ? { ...order, status: "completed" } : order
-      )
-    );
-  };
 
   if (loading) {
     return <p>Loading orders...</p>;
@@ -81,78 +105,68 @@ const DriverOrder = () => {
   return (
     <div className="driver-orders">
       <h1>Driver Dashboard</h1>
-
-      {/* Ready Orders */}
       <section>
         <h2>Ready Orders</h2>
         <ul>
           {orders
-            .filter((order) => order.status === "ready")
+            .filter((order) => order.OrderStatus === "Ready")
             .map((order) => (
-              <li key={order.id}>
+              <li key={order.OrderID}>
                 <div>
                   <p>
-                    <strong>Customer:</strong> {order.customerName}
+                    <strong>Destination:</strong> {order.Destination}
                   </p>
                   <p>
-                    <strong>Address:</strong> {order.address}
+                    <strong>Special Handling:</strong> {order.SpecialHandling}
                   </p>
                   <p>
-                    <strong>Phone:</strong> {order.phone}
+                    <strong>Total Cost:</strong> ${order.TotalCost}
                   </p>
                 </div>
-                <button onClick={() => selectOrder(order.id)}>
-                  Pick Up Order
-                </button>
+                <button onClick={() => selectOrder(order.OrderID)}>Pick Up Order</button>
               </li>
             ))}
         </ul>
       </section>
-
-      {/* Ongoing Deliveries */}
       <section>
         <h2>Ongoing Deliveries</h2>
         <ul>
           {orders
-            .filter((order) => order.status === "ongoing")
+            .filter((order) => order.OrderStatus === "Out for delivery")
             .map((order) => (
-              <li key={order.id}>
+              <li key={order.OrderID}>
                 <div>
                   <p>
-                    <strong>Customer:</strong> {order.customerName}
+                    <strong>Destination:</strong> {order.Destination}
                   </p>
                   <p>
-                    <strong>Address:</strong> {order.address}
+                    <strong>Special Handling:</strong> {order.SpecialHandling}
                   </p>
                   <p>
-                    <strong>Phone:</strong> {order.phone}
+                    <strong>Total Cost:</strong> ${order.TotalCost}
                   </p>
                 </div>
-                <button onClick={() => completeDelivery(order.id)}>
-                  Confirm Delivery
-                </button>
+                <button onClick={() => completeDelivery(order.OrderID)}>Confirm Delivery</button>
               </li>
             ))}
         </ul>
       </section>
-
-      {/* Completed Orders */}
       <section>
         <h2>Completed Orders</h2>
         <ul>
           {orders
-            .filter((order) => order.status === "completed")
+            .filter((order) => order.OrderStatus === "Delivered")
             .map((order) => (
-              <li key={order.id}>
+              <li key={order.OrderID}>
                 <div>
                   <p>
-                    <strong>Customer:</strong> {order.customerName}
+                    <strong>Destination:</strong> {order.Destination}
                   </p>
                   <p>
-                    <strong>Address:</strong> {order.address}
+                    <strong>Special Handling:</strong> {order.SpecialHandling}
                   </p>
                   <p>
-                    <strong>Phone:</strong> {order.phone}
+                    <strong>Total Cost:</strong> ${order.TotalCost}
                   </p>
                 </div>
               </li>
