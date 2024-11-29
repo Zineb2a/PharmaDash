@@ -41,7 +41,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 20px;
+    gap: clamp(10px, 2vw, 20px); /* Dynamic spacing */
     flex-wrap: wrap; /* Allow wrapping on smaller screens */
     text-align: center;
     margin: 20px 0px;
@@ -75,10 +75,8 @@
 
 /* Image styles */
 .explore-menu-list-item img {
-    width: 10vw; /* Adjust width for larger screens */
-    min-width: 80px; /* Minimum width */
-    height: 10vw;
-    min-height: 80px;
+    width: clamp(80px, 10vw, 150px); /* Dynamic size */
+    height: clamp(80px, 10vw, 150px); /* Match height to width */
     cursor: pointer;
     border-radius: 50%;
     object-fit: cover;
@@ -147,23 +145,34 @@
     
     .explore-menu-text {
         max-width: 90%;
-        font-size: 14px;
+        font-size: clamp(0.9rem, 2vw, 1.1rem); /* Slightly smaller font */
     }
 
     .explore-menu-list-item img {
-        width: 20vw; /* Increase image size on smaller screens */
-        height: 20vw;
+        width: clamp(70px, 15vw, 120px); /* Adjust size for smaller screens */
+        height: clamp(70px, 15vw, 120px);
     }
 }
 
 @media (max-width: 750px) {
     .explore-menu-text {
         max-width: 100%;
-        font-size: 14px;
+        font-size: clamp(0.8rem, 1.5vw, 1rem); /* Smaller font size */
     }
 
     .explore-menu-list-item img {
-        width: 25vw; /* Adjust image size for very small screens */
-        height: 25vw;
+        width: clamp(60px, 20vw, 100px); /* Adjust image size for very small screens */
+        height: clamp(60px, 20vw, 100px);
+    }
+}
+
+@media (min-width: 1600px) {
+    .explore-menu-list-item img {
+        width: clamp(120px, 8vw, 180px); /* Larger sizes for large screens */
+        height: clamp(120px, 8vw, 180px);
+    }
+
+    .explore-menu-text {
+        font-size: clamp(1.2rem, 3vw, 1.5rem); /* Slightly larger font */
     }
 }

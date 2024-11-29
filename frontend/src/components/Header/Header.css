@@ -7,6 +7,8 @@
     margin-bottom: 8vw;
     border-radius: 12px; /* Slightly increase the border-radius for a smoother look */
     overflow: hidden; /* To ensure no content overflows */
+    max-width: 2000px; /* Constrain max width for larger screens */
+    width: 100%; /* Maintain responsiveness */
 }
 
 .header::before {
@@ -41,12 +43,12 @@
 .header-contents h2 {
     font-weight: 700; /* Bolder font for the heading */
     color: #ffffff; /* White text for better contrast */
-    font-size: max(2.5vw, 24px); /* Adjust font size */
+    font-size: clamp(1.5rem, 2.5vw, 3rem); /* Responsive font size */
     margin-bottom: 1rem; /* Add space below the heading */
 }
 
 .header-contents p {
-    font-size: max(1.2vw, 16px); /* Smaller font size for paragraph */
+    font-size: clamp(1rem, 1.2vw, 1.5rem); /* Responsive font size */
     margin-bottom: 1.5rem; /* Space between text and button */
     color: #f1e9e9; /* Lighter text color */
 }
@@ -57,7 +59,7 @@
     font-weight: 600;
     padding: 0.8vw 2vw;
     background: #e74c3c; /* More vibrant button color */
-    font-size: max(1.2vw, 14px);
+    font-size: clamp(0.8rem, 1.2vw, 1.5rem); /* Responsive font size */
     border-radius: 50px;
     cursor: pointer;
     transition: background 0.3s, transform 0.3s; /* Add smooth transitions */
@@ -68,6 +70,7 @@
     transform: scale(1.05); /* Slightly enlarge button on hover */
 }
 
+/* Responsive styles for medium-sized screens */
 @media (max-width: 1050px) {
     .header {
         height: 32vw;
@@ -76,11 +79,24 @@
     .header-contents {
         max-width: 80%; /* More space for text on medium screens */
     }
+
+    .header-contents h2 {
+        font-size: clamp(1.2rem, 2vw, 2.5rem); /* Adjust heading size */
+    }
+
+    .header-contents p {
+        font-size: clamp(0.9rem, 1vw, 1.3rem); /* Smaller font for text */
+    }
+
+    .header-contents button {
+        padding: 1vw 2.5vw; /* Adjust button padding */
+    }
 }
 
+/* Responsive styles for small screens */
 @media (max-width: 750px) {
     .header {
-        height: auto;
+        height: auto; /* Allow auto height for smaller devices */
     }
 
     .header-contents {
@@ -89,12 +105,36 @@
         padding: 3vw;
     }
 
+    .header-contents h2 {
+        font-size: clamp(1rem, 1.5vw, 2rem); /* Adjust heading size */
+    }
+
     .header-contents p {
         display: none; /* Hide paragraph text */
     }
 
     .header-contents button {
-        padding: 2vw 4vw;
+        padding: 2vw 4vw; /* Increase button padding for better visibility */
+        font-size: clamp(0.8rem, 1vw, 1.2rem); /* Adjust button size */
+    }
+}
+
+/* Responsive styles for extremely large screens or zoomed out */
+@media (min-width: 1600px) {
+    .header {
+        height: 25vw; /* Reduce height for very large screens */
+    }
+
+    .header-contents {
+        width: 60%; /* Prevent excessive width */
+    }
+
+    .header-contents h2 {
+        font-size: clamp(2rem, 3vw, 4rem); /* Keep headings proportional */
+    }
+
+    .header-contents p {
+        font-size: clamp(1rem, 1.5vw, 2rem); /* Keep text readable */
     }
 }
 
