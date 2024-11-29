@@ -20,21 +20,24 @@ const Payment = () => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
-
+  
     try {
-      const response = await fetch("http://localhost:3000/order/create_order ", {
+      const response = await fetch("http://localhost:3000/order/create_order", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
           CardNumber: formData.cardNumber,
           ExpiryDate: formData.expiryDate,
           CVV: formData.cvv,
-          CartID: formData.cartId,
+          CartID: formData.cartId, // Ensure this is set
         }),
       });
-
+  
       const result = await response.json();
-
+  
       if (response.ok) {
         setMessage(`Order created successfully! Order ID: ${result.order_id}`);
         setFormData({ cardNumber: "", expiryDate: "", cvv: "", cartId: formData.cartId });
@@ -47,6 +50,7 @@ const Payment = () => {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="payment-container">
