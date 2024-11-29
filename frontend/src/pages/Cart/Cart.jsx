@@ -22,7 +22,7 @@ const Cart = () => {
     const initializeCart = async () => {
       try {
         console.log("Fetching cart data...");
-        const response = await fetch("http://localhost:3000/api/cart/createOrFetch", {
+        const response = await fetch("http://localhost:3000/cart/create_cart", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -57,7 +57,7 @@ const Cart = () => {
   const addItemToCart = async (itemId) => {
     try {
       console.log(`Adding item with ID ${itemId} to cart...`);
-      const response = await fetch("http://localhost:3000/api/cart/addItem", {
+      const response = await fetch("http://localhost:3000/cart/add_cart_item", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -90,7 +90,7 @@ const Cart = () => {
   const removeItemFromCart = async (cartItemId, inventoryItemId) => {
     try {
       console.log(`Removing item with cartItemId ${cartItemId} from cart...`);
-      const response = await fetch("http://localhost:3000/api/cart/removeItem", {
+      const response = await fetch("http://localhost:3000/cart/remove_cart_item", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
