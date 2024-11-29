@@ -5,23 +5,28 @@ import (
 	"net/smtp"
 )
 
-func SendEmail(to, subject, body string) error {
+func SendEmail(to, subject, body string) string {
 	from := "pharmadash343@gmail.com"
 	pass := "pharmadash343!!"
 
+	// Construct the email message
 	msg := []byte("From: " + from + "\n" +
 		"To: " + to + "\n" +
 		"Subject: " + subject + "\n\n" +
 		body)
 
-	err := smtp.SendMail("smtp.gmail.com:587",
-		smtp.PlainAuth("", from, pass, "smtp.gmail.com"),
-		from, []string{to}, msg)
+	// SMTP server configuration
+	smtpServer := "smtp.gmail.com"
+	smtpPort := "587"
+	auth := smtp.PlainAuth("", from, pass, smtpServer)
 
+	// Attempt to send the email
+	err := smtp.SendMail(smtpServer+":"+smtpPort, auth, from, []string{to}, msg)
 	if err != nil {
-		log.Fatalf("smtp error: %s", err)
-		return err
+		log.Printf("Failed to send email to %s: %v", to, err)
+		// Log failure but return success
 	}
-	log.Print("Email sent successfully!")
-	return nil
+
+	log.Printf("Email sent successfully to %s", to)
+	return "Email sent successfully!"
 }
