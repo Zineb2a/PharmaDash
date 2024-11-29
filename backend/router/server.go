@@ -56,6 +56,8 @@ func GetNewServer() (*Server, error) {
 			user.POST("/register", server.RegisterNewAccount)
 			user.POST("/login", server.Login)
 			user.POST("/logout", server.LogOut)
+			user.POST("/driver_picks_up", server.mustAuthChecker, server.PickUpOrder)
+			user.POST("/driver_confirm_delivery", server.mustAuthChecker, server.ConfirmOrderDelivery)
 		}
 		cart := router.Group("/cart")
 		{

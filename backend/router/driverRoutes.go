@@ -9,7 +9,6 @@ import (
 	"pharmaDashServer/util"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -161,17 +160,4 @@ func (server *Server) PickUpOrder(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "Order picked up successfully."})
-}
-
-// helper function
-// Assuming you have payload.ID of type uuid.UUID
-func ConvertUUIDToPGTypeUUID(payloadID uuid.UUID) pgtype.UUID {
-	var pgUUID pgtype.UUID
-
-	// Copy the UUID into pgUUID.Bytes
-	copy(pgUUID.Bytes[:], payloadID[:]) // copying bytes from uuid.UUID to pgtype.UUID
-
-	pgUUID.Valid = true // Mark as valid UUID
-
-	return pgUUID
 }
