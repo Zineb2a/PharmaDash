@@ -20,7 +20,7 @@ func (server *Server) ConfirmOrderDelivery(c *gin.Context) {
 		return
 	}
 
-	driverEmail := payload.Username
+	//driverEmail := payload.Username
 	ctx := context.Background()
 
 	// Acquire a connection from the pool
@@ -60,10 +60,10 @@ func (server *Server) ConfirmOrderDelivery(c *gin.Context) {
 	}
 
 	// Send email notification to the user
-	if err := util.SendEmail(userEmail.String, "Your order has been delivered", "Your order has been successfully delivered by driver: "+driverEmail); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to send confirmation email."})
-		return
-	}
+	// if err := util.SendEmail(userEmail.String, "Your order has been delivered", "Your order has been successfully delivered by driver: "+driverEmail); err != nil {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to send confirmation email."})
+	// 	return
+	// }
 
 	// Commit the transaction
 	if err := conn.Commit(ctx); err != nil {
@@ -95,7 +95,7 @@ func (server *Server) PickUpOrder(c *gin.Context) {
 	query := db.New(conn)
 
 	// Get driver details
-	driver, err := query.GetDriverByEmail(ctx, pgtype.Text{String: driverEmail, Valid: true})
+	_, err = query.GetDriverByEmail(ctx, pgtype.Text{String: driverEmail, Valid: true})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "Driver not found."})
 		return
@@ -142,17 +142,17 @@ func (server *Server) PickUpOrder(c *gin.Context) {
 	}
 
 	// Get the user's email associated with the order
-	userEmail, err := query.GetEmailFromOrder(ctx, selectedOrder.OrderID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to retrieve email."})
-		return
-	}
+	// userEmail, err := query.GetEmailFromOrder(ctx, selectedOrder.OrderID)
+	// if err != nil {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to retrieve email."})
+	// 	return
+	// }
 
 	// Send email notification to the user
-	if err := util.SendEmail(userEmail.String, "Your order is out for delivery", "Your order is now being delivered by driver: "+driver.Name); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to send notification email."})
-		return
-	}
+	// if err := util.SendEmail(userEmail.String, "Your order is out for delivery", "Your order is now being delivered by driver: "+driver.Name); err != nil {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to send notification email."})
+	// 	return
+	// }
 	// Commit the transaction
 	if err := conn.Commit(ctx); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to commit transaction."})

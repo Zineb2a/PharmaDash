@@ -40,3 +40,15 @@ type OrderRequest struct {
   "expiry_date" : "11/24",
   "cvv": "123"
 }
+
+      {
+      "RegisterMode" : "client",
+      "UserData" : {
+        "Name":        "test",
+        "LastName":    "test",
+        "Password":    "test",
+        "PhoneNumber": "test",
+        "Email":       "test",
+        "Address":     "test"
+         }
+      }

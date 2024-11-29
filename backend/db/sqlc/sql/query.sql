@@ -117,7 +117,7 @@ WHERE quotation_id = $1;
 -- Update the order status to 'Out for Delivery'
 UPDATE Orders
 SET 
-    order_status = 'Out for Delivery'
+    order_status = 'Out for delivery'
 WHERE 
     order_id = $2
     AND order_status = 'Created';  -- Ensure the order is still pending before assigning
@@ -131,7 +131,7 @@ SET
     order_status = 'Delivered'
 WHERE 
     order_id = $1
-    AND order_status = 'Out for Delivery'  -- Ensure the order is out for delivery before marking as delivered
+    AND order_status = 'Out for delivery'  -- Ensure the order is out for delivery before marking as delivered
 RETURNING order_id, order_status;  -- Returning the order_id and order_status
 
 

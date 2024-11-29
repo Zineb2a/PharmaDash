@@ -824,7 +824,7 @@ SET
     order_status = 'Delivered'
 WHERE 
     order_id = $1
-    AND order_status = 'Out for Delivery'  -- Ensure the order is out for delivery before marking as delivered
+    AND order_status = 'Out for delivery'  -- Ensure the order is out for delivery before marking as delivered
 RETURNING order_id, order_status
 `
 
