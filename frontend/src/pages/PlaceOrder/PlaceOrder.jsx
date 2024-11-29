@@ -1,131 +1,220 @@
-import React, { useContext, useEffect, useState } from 'react'
-import './PlaceOrder.css'
-import { StoreContext } from '../../Context/StoreContext'
+
+import React, { useContext, useEffect, useState } from 'react';
+import './PlaceOrder.css';
+import { StoreContext } from '../../Context/StoreContext';
 import { assets } from '../../assets/assets';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 
 const PlaceOrder = () => {
-
-    const [payment, setPayment] = useState("cod")
+    const [showQuotationPopup, setShowQuotationPopup] = useState(false);
     const [data, setData] = useState({
         firstName: "",
         lastName: "",
         email: "",
-        street: "",
-        city: "",
-        state: "",
-        zipcode: "",
-        country: "",
-        phone: ""
-    })
-
-    const { getTotalCartAmount, token, food_list, cartItems, url, setCartItems,currency,deliveryCharge } = useContext(StoreContext);
+        address: "",
+    });
+    const { getTotalCartAmount, token, food_list, cartItems, url, setCartItems, currency, deliveryCharge } = useContext(StoreContext);
+    
+    const [quotationData, setQuotationData] = useState({
+        quotation_id: 1, // Initially null
+        total_cost: 0,
+        delivery_frequency: '',
+        destination: '',
+        special_handling: '',
+        insurance: 50.0,
+        include_insurance: true,
+        is_refused: false,
+        cart_id: 0,
+    });
 
     const navigate = useNavigate();
 
     const onChangeHandler = (event) => {
-        const name = event.target.name
-        const value = event.target.value
-        setData(data => ({ ...data, [name]: value }))
-    }
+        const name = event.target.name;
+        const value = event.target.value;
+        setData((data) => ({ ...data, [name]: value }));
+    };
+
+    const generateQuotation = () => {
+        // Generate the quotation dynamically based on current cart and user input
+        const totalCost = getTotalCartAmount() + deliveryCharge;
+
+        const newQuotationData = {
+            quotation_id: Math.floor(Math.random() * 10000), // Or fetch from backend
+            total_cost: totalCost,
+            delivery_frequency: "Once", // You can add more logic here based on your requirements
+            destination: data.address,
+            special_handling: quotationData.special_handling || null,
+            insurance: quotationData.insurance,
+            include_insurance: quotationData.include_insurance,
+            is_refused: quotationData.is_refused,
+            cart_id: cartItems.cart_id, 
+        };
+
+        setQuotationData(newQuotationData); // Set the quotation data
+        setShowQuotationPopup(true); // Show the quotation popup
+    };
 
     const placeOrder = async (e) => {
-        e.preventDefault()
+        e.preventDefault();
+
         let orderItems = [];
-        food_list.map(((item) => {
+        food_list.forEach((item) => {
             if (cartItems[item._id] > 0) {
-                let itemInfo = item;
-                itemInfo["quantity"] = cartItems[item._id];
-                orderItems.push(itemInfo)
+                let itemInfo = { ...item };
+                itemInfo['quantity'] = cartItems[item._id];
+                orderItems.push(itemInfo);
             }
-        }))
-        let orderData = {
+        });
+
+        const orderPayload = {
             address: data,
             items: orderItems,
             amount: getTotalCartAmount() + deliveryCharge,
-        }
-        if (payment === "stripe") {
-            let response = await axios.post(url + "/api/order/place", orderData, { headers: { token } });
-            if (response.data.success) {
-                const { session_url } = response.data;
-                window.location.replace(session_url);
-            }
-            else {
-                toast.error("Something Went Wrong")
-            }
-        }
-        else{
-            let response = await axios.post(url + "/api/order/placecod", orderData, { headers: { token } });
-            if (response.data.success) {
-                navigate("/myorders")
-                toast.success(response.data.message)
-                setCartItems({});
-            }
-            else {
-                toast.error("Something Went Wrong")
-            }
-        }
+            quotation: quotationData, // Include the quotation data here
+        };
 
-    }
+        try {
+            const response = await axios.post(`${url}/cart/delivery_quotation`, {
+                quotation_id: quotationData.quotation_id,
+                total_cost: getTotalCartAmount() + deliveryCharge,
+                delivery_frequency: quotationData.delivery_frequency,
+                destination: data.address,
+                special_handling: quotationData.special_handling || null,
+                insurance: quotationData.insurance,
+                include_insurance: quotationData.include_insurance,
+                is_refused: quotationData.is_refused,
+                cart_id: quotationData.cart_id,
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            toast.success("Order placed successfully!");
+            setCartItems({}); 
+            navigate('/order-success'); // Redirect to success page
+        } catch (error) {
+            console.error("Error placing order:", error.response || error);
+            toast.error("Failed to place the order. Please try again.");
+        }
+    };
+
+    const handleAccept = () => {
+        setQuotationData((prev) => ({
+            ...prev,
+            is_refused: false,
+        }));
+        setShowQuotationPopup(false);
+        navigate('/payment');
+    };
+
+    const handleReject = () => {
+        setQuotationData((prev) => ({
+            ...prev,
+            is_refused: true,
+        }));
+        setShowQuotationPopup(false);
+        navigate('/place-order');
+    };
 
     useEffect(() => {
         if (!token) {
-            toast.error("to place an order sign in first")
-            navigate('/cart')
+            toast.error('To place an order, sign in first');
+            navigate('/cart');
+        } else if (getTotalCartAmount() === 0) {
+            navigate('/cart');
         }
-        else if (getTotalCartAmount() === 0) {
-            navigate('/cart')
-        }
-    }, [token])
+    }, [token]);
 
     return (
-        <form onSubmit={placeOrder} className='place-order'>
+        <form onSubmit={placeOrder} className="place-order">
             <div className="place-order-left">
-                <p className='title'>Delivery Information</p>
+                <p className="title">Delivery Information</p>
                 <div className="multi-field">
-                    <input type="text" name='firstName' onChange={onChangeHandler} value={data.firstName} placeholder='First name' required />
-                    <input type="text" name='lastName' onChange={onChangeHandler} value={data.lastName} placeholder='Last name' required />
+                    <input type="text" name="firstName" onChange={onChangeHandler} value={data.firstName} placeholder="First name" required />
+                    <input type="text" name="lastName" onChange={onChangeHandler} value={data.lastName} placeholder="Last name" required />
                 </div>
-                <input type="email" name='email' onChange={onChangeHandler} value={data.email} placeholder='Email address' required />
-                <input type="text" name='street' onChange={onChangeHandler} value={data.street} placeholder='Street' required />
-                <div className="multi-field">
-                    <input type="text" name='city' onChange={onChangeHandler} value={data.city} placeholder='City' required />
-                    <input type="text" name='state' onChange={onChangeHandler} value={data.state} placeholder='State' required />
-                </div>
-                <div className="multi-field">
-                    <input type="text" name='zipcode' onChange={onChangeHandler} value={data.zipcode} placeholder='Zip code' required />
-                    <input type="text" name='country' onChange={onChangeHandler} value={data.country} placeholder='Country' required />
-                </div>
-                <input type="text" name='phone' onChange={onChangeHandler} value={data.phone} placeholder='Phone' required />
+                <input type="email" name="email" onChange={onChangeHandler} value={data.email} placeholder="Email address" required />
+                <input type="text" name="address" onChange={onChangeHandler} value={data.address} placeholder="Address" required />
             </div>
             <div className="place-order-right">
                 <div className="cart-total">
                     <h2>Cart Totals</h2>
                     <div>
-                        <div className="cart-total-details"><p>Subtotal</p><p>{currency}{getTotalCartAmount()}</p></div>
+                        <div className="cart-total-details">
+                            <p>Subtotal</p>
+                            <p>
+                                {currency}
+                                {getTotalCartAmount()}
+                            </p>
+                        </div>
                         <hr />
-                        <div className="cart-total-details"><p>Delivery Fee</p><p>{currency}{getTotalCartAmount() === 0 ? 0 : deliveryCharge}</p></div>
+                        <div className="cart-total-details">
+                            <p>Delivery Fee</p>
+                            <p>
+                                {currency}
+                                {getTotalCartAmount() === 0 ? 0 : deliveryCharge}
+                            </p>
+                        </div>
                         <hr />
-                        <div className="cart-total-details"><b>Total</b><b>{currency}{getTotalCartAmount() === 0 ? 0 : getTotalCartAmount() + deliveryCharge}</b></div>
+                        <div className="cart-total-details">
+                            <b>Total</b>
+                            <b>
+                                {currency}
+                                {getTotalCartAmount() === 0 ? 0 : getTotalCartAmount() + deliveryCharge}
+                            </b>
+                        </div>
                     </div>
                 </div>
-                <div className="payment">
-                    <h2>Payment Method</h2>
-                    <div onClick={() => setPayment("cod")} className="payment-option">
-                        <img src={payment === "cod" ? assets.checked : assets.un_checked} alt="" />
-                        <p>Cash on delivery</p>
-                    </div>
-                    <div onClick={() => setPayment("stripe")} className="payment-option">
-                        <img src={payment === "stripe" ? assets.checked : assets.un_checked} alt="" />
-                        <p>Stripe ( Credit / Debit )</p>
-                    </div>
+                <div className="quotation">
+                    <button className="handle-quotation" type="button" onClick={generateQuotation}>
+                        Generate Quotation
+                    </button>
                 </div>
-                <button className='place-order-submit' type='submit'>{payment==="cod"?"Place Order":"Proceed To Payment"}</button>
             </div>
+            {showQuotationPopup && (
+                <div className="popup-overlay">
+                    <div className="popup">
+                        <h3>Quotation Details</h3>
+                        <p><strong>Total Cost:</strong> {getTotalCartAmount() === 0 ? 0 : getTotalCartAmount() + deliveryCharge}</p>
+                        <p><strong>Delivery Frequency:</strong> {quotationData.delivery_frequency}</p>
+                        <p><strong>Destination:</strong> {data.address}</p>
+                        <div className='special-handling'>
+                            <label htmlFor="special-handling">
+                                <strong>Special Handling:</strong>
+                            </label>
+                            <textarea
+                                id="special-handling"
+                                value={quotationData.special_handling || ""}
+                                onChange={(e) =>
+                                    setQuotationData((prev) => ({
+                                        ...prev,
+                                        special_handling: e.target.value,
+                                    }))
+                                }
+                                rows={3}
+                                placeholder="Enter special handling instructions here"
+                            />
+                        </div>
+                        <p><strong>Insurance:</strong> 10% </p>
+                        <p><strong>Include Insurance:</strong> {quotationData.include_insurance ? 'Yes' : 'No'}</p>
+                        <p><strong>Cart ID:</strong> {quotationData.cart_id}</p>
+                        <div className="popup-buttons">
+                            <button className="accept-button" onClick={handleAccept}>
+                                Accept
+                            </button>
+                            <button className="reject-button" onClick={handleReject}>
+                                Reject
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </form>
-    )
-}
+    );
+};
 
-export default PlaceOrder
+export default PlaceOrder;

@@ -1,0 +1,101 @@
+.payment-container {
+    margin: 20px auto;
+    padding: 20px;
+    max-width: 90%; 
+    min-height: calc(60vh - 100px); 
+    width: 500px; /* Cap the maximum width */
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out; /* Smooth transitions for better UX */
+  }
+  
+  .payment-container h2 {
+    text-align: center;
+    color: #d91e18;
+    margin-bottom: 20px;
+    font-size: 1.5rem; /* Use relative units for scaling */
+  }
+  
+  .payment-form label {
+    display: block;
+    margin-bottom: 10px;
+    color: #333;
+    font-weight: bold;
+    font-size: 1rem;
+  }
+  
+  .payment-form input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem; /* Use relative font size */
+  }
+  
+  .payment-form input:focus {
+    outline: none;
+    border-color: #d91e18;
+    box-shadow: 0 0 5px rgba(217, 30, 24, 0.5);
+  }
+  
+  .proceed-button {
+    width: 100%;
+    padding: 12px;
+    background: #d91e18;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out; /* Add hover effects */
+  }
+  
+  .proceed-button:hover {
+    background: #b71c1c;
+  }
+  
+  .proceed-button:disabled {
+    background: #bbb;
+    cursor: not-allowed;
+  }
+  
+  .message {
+    margin-top: 20px;
+    text-align: center;
+    font-weight: bold;
+    color: #28a745;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .payment-container {
+      max-width: 100%; /* Full width on smaller screens */
+      padding: 15px;
+    }
+  
+    .payment-container h2 {
+      font-size: 1.25rem; /* Slightly smaller font */
+    }
+  
+    .payment-form input {
+      font-size: 0.9rem; /* Reduce input font size */
+    }
+  
+    .proceed-button {
+      font-size: 0.9rem; /* Reduce button font size */
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .payment-container {
+      padding: 10px; /* Reduce padding */
+    }
+  
+    .payment-container h2 {
+      font-size: 1rem; /* Smaller heading */
+    }
+  }
+  

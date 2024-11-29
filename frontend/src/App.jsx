@@ -11,6 +11,7 @@ import Prescription from './pages/Prescriptions/Prescriptions';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Verify from './pages/Verify/Verify';
+import Payment from './pages/Payment/Payment';
 import PrivacyPolicy from './components/PrivacyPolicy/PrivacyPolicy';
 import AboutUs from './components/AboutUs/AboutUs';
 import ChatbotPage from './pages/Chatbot/ChatbotPage';
@@ -37,9 +38,11 @@ const App = () => {
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/about-us" element={<AboutUs />} />
           <Route path="/otc" element={<OTCPage />} />
+          <Route path="/payment" element={<Payment/>} />
           <Route path="/prescriptions" element={<Prescription />} />
           <Route path="/chatbot" element={<ChatbotPage />} /> 
           <Route path="/contact-us" element={<ContactUs />} />
+          <Route path="/place-order" element={<PlaceOrder />}/>
         </Routes>
       </div>
       <Footer />
