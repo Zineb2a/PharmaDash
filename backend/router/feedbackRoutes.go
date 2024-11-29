@@ -8,6 +8,9 @@ import (
 	"pharmaDashServer/util"
 	"strconv"
 
+	//"pharmaDashServer/util"
+	//"strconv"
+
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -55,6 +58,11 @@ func (server *Server) AddFeedback(c *gin.Context) {
 	}
 
 	// 3. Add feedback to the database
+	if req.Rating > 5 || req.Rating <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "Invalid rating. Rating must be between 0 and 5 inclusively."})
+		return
+	}
+
 	feedback, err := query.AddFeedback(ctx, db.AddFeedbackParams{
 		OrderID:  req.OrderID,
 		ClientID: client.AccountID,
@@ -62,7 +70,7 @@ func (server *Server) AddFeedback(c *gin.Context) {
 		Comment:  pgtype.Text{String: req.Comment, Valid: true}, //had error for type mismatch
 	})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to add feedback."})
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to add feedback.", "error": err.Error()})
 		return
 	}
 
