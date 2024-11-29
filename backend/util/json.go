@@ -29,10 +29,11 @@ type DeleteCartRequest struct {
 }
 
 type OrderRequest struct {
-	CartID     int32  `json:"cart_id"`
-	CardNumber string `json:"card_number"`
-	ExpiryDate string `json:"expiry_date"`
-	CVV        string `json:"cvv"`
+	CartID      int32  `json:"cart_id"`
+	CardNumber  string `json:"card_number"`
+	ExpiryDate  string `json:"expiry_date"`
+	CVV         string `json:"cvv"`
+	PaymentType string `json:"paymentType"`
 }
 
 type PickUpOrderRequest struct {

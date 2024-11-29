@@ -22,12 +22,6 @@ func (server *Server) CreateOrder(c *gin.Context) {
 		return
 	}
 
-	// Validate card information
-	if err := util.ValidateCardInfo(req.CardNumber, req.ExpiryDate, req.CVV); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": err.Error()})
-		return
-	}
-
 	ctx := context.Background()
 	conn, err := server.pool.Begin(ctx)
 	if err != nil {
@@ -55,6 +49,21 @@ func (server *Server) CreateOrder(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "Quotation not found."})
 		return
 	}
+
+	// Validate card information
+	if err := util.ValidateCardInfo(req.CardNumber, req.ExpiryDate, req.CVV); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": err.Error()})
+		return
+	}
+
+	// Process payment
+	paymentFactory := util.PaymentFactory{}
+	paymentStrategy, err := paymentFactory.GetPaymentStrategy(req.PaymentType)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": err.Error()})
+		return
+	}
+	paymentStrategy.ProcessPayment(float32(quotation.TotalCost.Float64), req.CardNumber, req.ExpiryDate, req.CVV)
 
 	// Create an order from the cart
 	orderID, err := query.CreateOrder(ctx, db.CreateOrderParams{

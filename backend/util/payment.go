@@ -22,7 +22,7 @@ type DebitPayment struct {
 	CardNumber string
 }
 
-func (p *PaymentFactory) getPaymentStrategy(text string) (PaymentInterface, error) {
+func (p *PaymentFactory) GetPaymentStrategy(text string) (PaymentInterface, error) {
 	if text == "credit" {
 		return CreditPayment{}, nil
 	}
