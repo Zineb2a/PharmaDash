@@ -12,7 +12,7 @@ const Order = () => {
       //const response = await axios.get(`${url}/api/order/list`);
       const response = await axios.get(`http://localhost:3000/order/get_orders`);
       if (response.data.success) {
-        setOrders(response.data.data.reverse());
+        setOrders(response.data.reverse());
       } else {
         toast.error('Error fetching orders.');
       }
@@ -21,22 +21,22 @@ const Order = () => {
     }
   };
 
-  // const statusHandler = async (event, orderId) => {
-  //   try {
-  //     const response = await axios.post(`${url}/api/order/status`, {
-  //       orderId,
-  //       status: event.target.value,
-  //     });
-  //     if (response.data.success) {
-  //       await fetchAllOrders();
-  //       toast.success('Order status updated successfully.');
-  //     } else {
-  //       toast.error('Error updating order status.');
-  //     }
-  //   } catch (error) {
-  //     toast.error('Something went wrong. Please try again.');
-  //   }
-  // };
+  const statusHandler = async (event, orderId) => {
+    try {
+      const response = await axios.post(`${url}/api/order/status`, {
+        orderId,
+        status: event.target.value,
+      });
+      if (response.data.success) {
+        await fetchAllOrders();
+        toast.success('Order status updated successfully.');
+      } else {
+        toast.error('Error updating order status.');
+      }
+    } catch (error) {
+      toast.error('Something went wrong. Please try again.');
+    }
+  };
 
   useEffect(() => {
     fetchAllOrders();

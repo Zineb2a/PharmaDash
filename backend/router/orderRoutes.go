@@ -164,5 +164,5 @@ func (server *Server) GetAllOrdersAdmin(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"orders": dbOrders})
+	c.JSON(http.StatusOK, gin.H{"success": true, "orders": dbOrders})
 }

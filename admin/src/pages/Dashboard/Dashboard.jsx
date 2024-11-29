@@ -17,7 +17,7 @@ const Dashboard = () => {
 
   const fetchOrderStats = async () => {
     try {
-      const response = await axios.get(`${url}/api/order/list`);
+      const response = await axios.get(`${url}/order/get_orders`);
       if (response.data.success) {
         const orders = response.data.data;
 
