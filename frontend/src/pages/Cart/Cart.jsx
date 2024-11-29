@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 const Cart = () => {
   const {
     cartItems,
-    setCartItems, // Function to update cart items in context
+    setCartItems,
     food_list,
     removeFromCart,
     getTotalCartAmount,
@@ -21,56 +21,62 @@ const Cart = () => {
   useEffect(() => {
     const initializeCart = async () => {
       try {
-        const response = await fetch("/api/cart/createOrFetch", {
+        console.log("Fetching cart data...");
+        const response = await fetch("http://localhost:3000/api/cart/createOrFetch", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          credentials: "include", // Include cookies in the request
+          credentials: "include", // Include cookies for authentication
         });
 
+        console.log("Response:", response);
+
         if (!response.ok) {
-          console.error("Failed to initialize cart:", response.statusText);
-          return;
+          throw new Error(`Failed to initialize cart: ${response.statusText}`);
         }
 
         const data = await response.json();
+        console.log("Cart data fetched:", data);
+
+        // Update cartItems if data exists
         if (data.cart_items) {
-          setCartItems(data.cart_items); // Update the cart context
+          setCartItems(JSON.parse(data.cart_items)); // Parse and set the cart items in context
         } else {
-          console.error("No cart items found:", data.status);
+          console.error("No cart items found in the response:", data.status);
         }
       } catch (error) {
         console.error("Error initializing cart:", error);
       }
     };
 
-    initializeCart();
+    initializeCart(); // Fetch cart data on component mount
   }, [setCartItems]);
 
   // Add an item to the cart
   const addItemToCart = async (itemId) => {
     try {
-      const response = await fetch("/api/cart/addItem", {
+      console.log(`Adding item with ID ${itemId} to cart...`);
+      const response = await fetch("http://localhost:3000/api/cart/addItem", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", // Include cookies in the request
+        credentials: "include",
         body: JSON.stringify({
           inventory_id: itemId,
+          cart_id: cartItems.cart_id, // Ensure cart ID is passed
         }),
       });
 
       if (!response.ok) {
-        console.error("Failed to add item to cart:", response.statusText);
-        return;
+        throw new Error(`Failed to add item to cart: ${response.statusText}`);
       }
 
       const data = await response.json();
       console.log("Item added successfully:", data);
 
-      // Update the cart locally (optional)
+      // Update the cart locally
       setCartItems((prev) => ({
         ...prev,
         [itemId]: (prev[itemId] || 0) + 1,
@@ -83,12 +89,13 @@ const Cart = () => {
   // Remove an item from the cart
   const removeItemFromCart = async (cartItemId, inventoryItemId) => {
     try {
-      const response = await fetch("/api/cart/removeItem", {
+      console.log(`Removing item with cartItemId ${cartItemId} from cart...`);
+      const response = await fetch("http://localhost:3000/api/cart/removeItem", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", // Include cookies in the request
+        credentials: "include",
         body: JSON.stringify({
           cart_item_id: cartItemId,
           inventory_item_id: inventoryItemId,
@@ -96,8 +103,7 @@ const Cart = () => {
       });
 
       if (!response.ok) {
-        console.error("Failed to remove item from cart:", response.statusText);
-        return;
+        throw new Error(`Failed to remove item from cart: ${response.statusText}`);
       }
 
       const data = await response.json();
@@ -135,12 +141,12 @@ const Cart = () => {
                   <p>{item.name}</p>
                   <p>
                     {currency}
-                    {item.price}
+                    {item.price.toFixed(2)} {/* Price rounded to 2 decimals */}
                   </p>
                   <div>{cartItems[item._id]}</div>
                   <p>
                     {currency}
-                    {item.price * cartItems[item._id]}
+                    {(item.price * cartItems[item._id]).toFixed(2)} {/* Total price rounded */}
                   </p>
                   <p
                     className="cart-items-remove-icon"
@@ -165,7 +171,7 @@ const Cart = () => {
               <p>Subtotal</p>
               <p>
                 {currency}
-                {getTotalCartAmount()}
+                {getTotalCartAmount().toFixed(2)} {/* Subtotal rounded */}
               </p>
             </div>
             <hr />
@@ -173,7 +179,7 @@ const Cart = () => {
               <p>Delivery Fee</p>
               <p>
                 {currency}
-                {getTotalCartAmount() === 0 ? 0 : deliveryCharge}
+                {getTotalCartAmount() === 0 ? "0.00" : deliveryCharge.toFixed(2)} {/* Delivery fee rounded */}
               </p>
             </div>
             <hr />
@@ -182,8 +188,8 @@ const Cart = () => {
               <b>
                 {currency}
                 {getTotalCartAmount() === 0
-                  ? 0
-                  : getTotalCartAmount() + deliveryCharge}
+                  ? "0.00"
+                  : (getTotalCartAmount() + deliveryCharge).toFixed(2)} {/* Total rounded */}
               </b>
             </div>
           </div>
