@@ -164,3 +164,38 @@ func (server *Server) PickUpOrder(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"status": "Order picked up successfully."})
 }
+
+func (server *Server) ReadyOrdersForPickup(c *gin.Context) {
+	// Extract authentication payload
+	payload := c.MustGet("auth_payload").(*token.Payload)
+	if payload.Role != "Driver" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only drivers can perform this operation"})
+		return
+	}
+
+	// Initialize context and database connection
+	ctx := context.Background()
+	conn, err := server.pool.Begin(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to start database transaction"})
+		return
+	}
+	defer conn.Rollback(ctx) // Ensure rollback on function exit
+
+	// Fetch available orders
+	query := db.New(conn)
+	orders, err := query.GetAvailableOrders(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch available orders"})
+		return
+	}
+
+	// Commit the transaction
+	if err := conn.Commit(ctx); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to commit transaction"})
+		return
+	}
+
+	// Respond with the fetched orders
+	c.JSON(http.StatusOK, gin.H{"orders": orders})
+}

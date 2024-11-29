@@ -78,6 +78,7 @@ func getNewServer() (*Server, error) {
 			order.POST("/create_order", server.mustAuthChecker, server.CreateOrder)
 			order.GET("/get_orders_client", server.mustAuthChecker, server.GetAllOrdersClient)
 			order.GET("/get_orders", server.GetAllOrdersAdmin)
+			order.GET("/get_ready_orders", server.ReadyOrdersForPickup) // fetches all orders ready for pickup
 		}
 		feedback := router.Group("/feedback")
 		{
