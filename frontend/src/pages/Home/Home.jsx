@@ -3,6 +3,7 @@ import Header from '../../components/Header/Header';
 import ExploreMenu from '../../components/ExploreMenu/ExploreMenu';
 import MedDisplay from '../../components/MedDisplay/MedDisplay';
 import AppDownload from '../../components/AppDownload/AppDownload';
+import LeaveAReview from '../../components/LeaveAReview/LeaveAReview';
 
 const Home = () => {
   const [category, setCategory] = useState("All");
@@ -17,6 +18,7 @@ const Home = () => {
       <Header />
   
       <AppDownload />
+      <LeaveAReview/>
     </>
   );
 }

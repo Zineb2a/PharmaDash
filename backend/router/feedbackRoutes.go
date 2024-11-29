@@ -28,6 +28,10 @@ func (server *Server) AddFeedback(c *gin.Context) {
 	}
 
 	payload := c.MustGet("auth_payload").(*token.Payload)
+	if payload.Role != "Client" {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Invalid Request: only clients can perform this operation"})
+		return
+	}
 	email := payload.Username
 
 	ctx := context.Background()
