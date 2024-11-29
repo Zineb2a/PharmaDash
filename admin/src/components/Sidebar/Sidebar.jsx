@@ -5,9 +5,9 @@ import { assets } from '../../assets/assets';
 
 const Sidebar = () => {
   const navOptions = [
-    { path: '/dashboard', icon: assets.dashboard_icon, label: 'Dashboard' },
+    { path: '/dashboard', icon: assets.order_icon, label: 'Dashboard' },
     { path: '/add', icon: assets.add_icon, label: 'Add Items' },
-    { path: '/list', icon: assets.list_icon, label: 'List Items' },
+    { path: '/list', icon: assets.order_icon, label: 'List Items' },
     { path: '/orders', icon: assets.order_icon, label: 'Orders' },
   ];
 

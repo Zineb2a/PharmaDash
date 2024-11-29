@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import './Dashboard.css';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { url } from '../../assets/assets';
 import { Pie } from 'react-chartjs-2';
 import 'chart.js/auto'; // Import for auto-chart registration
 
@@ -17,16 +16,18 @@ const Dashboard = () => {
 
   const fetchOrderStats = async () => {
     try {
-      const response = await axios.get(`${url}/order/get_orders`);
+      // Fetch orders from backend
+      const response = await axios.get('http://localhost:3000/order/get_orders');
       if (response.data.success) {
-        const orders = response.data.data;
+        const orders = response.data.orders; // Access 'orders' array from the backend response
 
-        // Calculate statistics
-        const delivered = orders.filter(order => order.status === 'Delivered').length;
-        const outForDelivery = orders.filter(order => order.status === 'Out for delivery').length;
-        const inProcess = orders.filter(order => order.status === 'Order Processing').length;
-        const canceled = orders.filter(order => order.status === 'Canceled').length;
+        // Calculate statistics based on the order status
+        const delivered = orders.filter(order => order.OrderStatus === 'Delivered').length;
+        const outForDelivery = orders.filter(order => order.OrderStatus === 'Out for delivery').length;
+        const inProcess = orders.filter(order => order.OrderStatus === 'Order Processing').length;
+        const canceled = orders.filter(order => order.OrderStatus === 'Canceled').length;
 
+        // Update state with calculated stats
         setOrderStats({
           totalOrders: orders.length,
           delivered,
@@ -38,6 +39,7 @@ const Dashboard = () => {
         toast.error('Error fetching order data.');
       }
     } catch (error) {
+      console.error('Error fetching orders:', error);
       toast.error('Something went wrong. Please try again.');
     }
   };
@@ -62,7 +64,7 @@ const Dashboard = () => {
       },
     ],
   };
-  
+
   return (
     <div className="dashboard">
       <h3>Dashboard</h3>

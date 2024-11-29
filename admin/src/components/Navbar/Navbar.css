@@ -4,6 +4,13 @@
   --hover-bg-color: #f1f1f1;
   --padding: 8px;
   --border-radius: 50%;
+  --dropdown-bg: #ffffff;
+  --dropdown-border: #ddd;
+  --dropdown-shadow: rgba(0, 0, 0, 0.1);
+  --transition-speed: 0.3s;
+  --navbar-bg: #fff;
+  --navbar-border: #ccc;
+  --profile-hover-scale: 1.15;
 }
 
 .navbar {
@@ -11,21 +18,15 @@
   justify-content: space-between;
   align-items: center;
   padding: var(--padding) 4%;
-  background-color: #fff;
-  border-bottom: 1px solid #ccc;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.logo-container {
-  display: flex;
-  align-items: center;
+  background-color: var(--navbar-bg);
+  border-bottom: 1px solid var(--navbar-border);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .logo {
   width: max(10%, 80px);
   height: auto;
   border-radius: var(--border-radius);
-  overflow: hidden;
 }
 
 .profile-container {
@@ -37,22 +38,35 @@
   height: 50px;
   border-radius: var(--border-radius);
   cursor: pointer;
-  transition: transform 0.2s ease-in-out;
+  transition: transform var(--transition-speed) ease-in-out;
 }
 
 .profile:hover {
-  transform: scale(1.1);
+  transform: scale(var(--profile-hover-scale));
 }
 
 .dropdown {
   position: absolute;
-  top: 60px;
+  top: calc(100% + 10px);
   right: 0;
-  background-color: #fff;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: var(--dropdown-bg);
+  border: 1px solid var(--dropdown-border);
   border-radius: 8px;
   overflow: hidden;
   z-index: 1000;
+  min-width: 200px;
+  animation: fadeIn var(--transition-speed) ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .dropdown ul {
@@ -62,10 +76,11 @@
 }
 
 .dropdown ul li {
-  padding: 10px 20px;
+  padding: 12px 20px;
   cursor: pointer;
   color: var(--text-color);
-  transition: background-color 0.2s;
+  transition: background-color var(--transition-speed);
+  text-align: left;
 }
 
 .dropdown ul li:hover {
@@ -75,4 +90,17 @@
 .dropdown ul li a {
   text-decoration: none;
   color: inherit;
+}
+
+.dropdown ul li:not(:last-child) {
+  border-bottom: 1px solid var(--dropdown-border);
+}
+
+.dropdown ul li:last-child {
+  color: red;
+  font-weight: bold;
+}
+
+.dropdown ul li:last-child:hover {
+  background-color: #ffebeb;
 }
