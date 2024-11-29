@@ -69,9 +69,9 @@ func (server *Server) CreateDeliveryQuotation(c *gin.Context) {
 	// extract items from shopping cart
 	//println(dbShoppingCart.CartID)
 	cartItems, err := query.GetAllShoppingCartItems(ctx, dbShoppingCart.CartID)
-	for _, item := range cartItems {
-		println(item.UnitPrice)
-	}
+	// for _, item := range cartItems {
+	// 	println(item.UnitPrice)
+	// }
 	if err != nil || len(cartItems) == 0 {
 		c.JSON(http.StatusOK, gin.H{"status": "Cart is empty. No cart items found."})
 		return
@@ -79,20 +79,15 @@ func (server *Server) CreateDeliveryQuotation(c *gin.Context) {
 
 	// Check for existing quotation for the cart
 	// If a quotation exists for this cart, delete it as a new one is being generated
-	existingQuotation, err := query.GetQuotationByCartID(ctx, pgtype.Int4{Int32: req.CartID})
+
+	existingQuotation, err := query.GetQuotationByCartID(ctx, pgtype.Int4{Int32: req.CartID, Valid: true})
 
 	if err != nil {
-		// if err == sql.ErrNoRows {
-		// 	// No existing quotation found, proceed to create a new one
-		// } else {
-		// 	// Other database error occurred
-		// 	c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to fetch existing quotation."})
-		// 	return
-		// }
+		println(err.Error())
 	} else {
 		if existingQuotation.QuotationID != 0 {
 			// Existing quotation found, delete it as a new one is being generated
-			err = query.DeleteQuotationByCartID(ctx, pgtype.Int4{Int32: req.CartID})
+			err = query.DeleteQuotationByCartID(ctx, pgtype.Int4{Int32: req.CartID, Valid: true})
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to replace existing quotation."})
 				return
@@ -118,19 +113,27 @@ func (server *Server) CreateDeliveryQuotation(c *gin.Context) {
 
 	totalCost += deliveryFee
 
+	// println(req.DeliveryFrequency)
+	// println(req.Destination)
+	// println(req.SpecialHandling)
+	// println(totalCost)
+	// println(insuranceCost)
+	// println(req.DeliveryFrequency)
+
 	createQuotationParams := db.CreateQuotationParams{
-		TotalCost:         pgtype.Float8{Float64: totalCost},
-		DeliveryFrequency: pgtype.Text{String: req.DeliveryFrequency},
-		Destination:       pgtype.Text{String: req.Destination},
-		SpecialHandling:   pgtype.Text{String: req.SpecialHandling},
-		Insurance:         pgtype.Float8{Float64: totalCost},
+		TotalCost:         pgtype.Float8{Float64: totalCost, Valid: true},
+		DeliveryFrequency: pgtype.Text{String: req.DeliveryFrequency, Valid: true},
+		Destination:       pgtype.Text{String: req.Destination, Valid: true},
+		SpecialHandling:   pgtype.Text{String: req.SpecialHandling, Valid: true},
+		Insurance:         pgtype.Float8{Float64: insuranceCost, Valid: true},
 		IncludeInsurance:  pgtype.Bool{Bool: true, Valid: true},
+		CartID:            pgtype.Int4{Int32: req.CartID, Valid: true},
 	}
 
 	// Call CreateQuotation
 	_, err = query.CreateQuotation(ctx, createQuotationParams)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to create quotation."})
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to create quotation.", "error": err.Error()})
 		return
 	}
 	// Type assertion for TotalCost
@@ -160,31 +163,31 @@ func (server *Server) CreateDeliveryQuotation(c *gin.Context) {
 // 	return pgtype.Numeric{Int: bigInt, Valid: true}
 // }
 
-func (server *Server) DeleteQuotation(c *gin.Context) {
-	var req struct {
-		QuotationID int32 `json:"quotation_id" binding:"required"`
-	}
+// func (server *Server) DeleteQuotation(c *gin.Context) {
+// 	var req struct {
+// 		QuotationID int32 `json:"quotation_id" binding:"required"`
+// 	}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "Invalid request"})
-		return
-	}
+// 	if err := c.ShouldBindJSON(&req); err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{"status": "Invalid request"})
+// 		return
+// 	}
 
-	ctx := context.Background()
-	conn, err := server.pool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "Server error"})
-		return
-	}
-	defer conn.Release()
-	query := db.New(conn)
+// 	ctx := context.Background()
+// 	conn, err := server.pool.Acquire(ctx)
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"status": "Server error"})
+// 		return
+// 	}
+// 	defer conn.Release()
+// 	query := db.New(conn)
 
-	// Execute delete query
-	err = query.DeleteQuotation(ctx, req.QuotationID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to delete quotation"})
-		return
-	}
+// 	// Execute delete query
+// 	err = query.DeleteQuotation(ctx, req.QuotationID)
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to delete quotation"})
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "Quotation deleted successfully"})
-}
+// 	c.JSON(http.StatusOK, gin.H{"status": "Quotation deleted successfully"})
+// }

@@ -90,12 +90,12 @@ WHERE
 
 
 -- name: CreateQuotation :one
-INSERT INTO QuotationRequests (total_cost, delivery_frequency, destination, special_handling, insurance, include_insurance, cart_id) 
+INSERT INTO QuotationRequest (total_cost, delivery_frequency, destination, special_handling, insurance, include_insurance, cart_id) 
 VALUES ($1, $2, $3, $4, $5, $6, $7) 
 RETURNING *;
 
 -- name: GetQuotationByID :one
-SELECT * FROM QuotationRequests
+SELECT * FROM QuotationRequest
 WHERE quotation_id = $1 LIMIT 1;
 
 -- name: CreateOrder :one
@@ -109,7 +109,7 @@ VALUES ($1, $2, $3)
 RETURNING order_item_id, order_id, inventory_item_id, quantity;
 
 -- name: DeleteQuotation :exec
-DELETE FROM QuotationRequests
+DELETE FROM QuotationRequest
 WHERE quotation_id = $1;
 
 
@@ -166,10 +166,10 @@ FROM Orders
 WHERE driver_id = $1;
 
 -- name: GetQuotationByCartID :one
-SELECT * FROM QuotationRequests WHERE cart_id = $1;
+SELECT * FROM QuotationRequest WHERE cart_id = $1;
 
 -- name: DeleteQuotationByCartID :exec
-DELETE FROM QuotationRequests WHERE cart_id = $1;
+DELETE FROM QuotationRequest WHERE cart_id = $1;
 
 -- name: AddFeedback :one
 INSERT INTO Feedback (order_id, client_id, rating, comment)

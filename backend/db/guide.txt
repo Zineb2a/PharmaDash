@@ -11,3 +11,18 @@ Transactions:
 use tx.Commit() if there are no errors at the end of the transaction
 if error call tx.Rollback()
 tx.Rollback() can be defered since if Commit is called first then rollback has no effect
+
+
+{
+  "delivery_frequency": "weekly",
+  "destination": "New York",
+  "special_handling": "fragile",
+  "insurance": 5,
+  "include_insurance": true,
+  "cart_id": 2
+}
+
+{
+    "Email": "test@example.com",
+    "Password": "testing"
+}

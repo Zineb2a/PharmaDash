@@ -165,7 +165,7 @@ func (q *Queries) CreateOrderItem(ctx context.Context, arg CreateOrderItemParams
 }
 
 const createQuotation = `-- name: CreateQuotation :one
-INSERT INTO QuotationRequests (total_cost, delivery_frequency, destination, special_handling, insurance, include_insurance, cart_id) 
+INSERT INTO QuotationRequest (total_cost, delivery_frequency, destination, special_handling, insurance, include_insurance, cart_id) 
 VALUES ($1, $2, $3, $4, $5, $6, $7) 
 RETURNING quotation_id, total_cost, delivery_frequency, destination, special_handling, insurance, include_insurance, cart_id
 `
@@ -333,7 +333,7 @@ func (q *Queries) DeleteCartItem(ctx context.Context, shoppingCartItemID int32) 
 }
 
 const deleteQuotation = `-- name: DeleteQuotation :exec
-DELETE FROM QuotationRequests
+DELETE FROM QuotationRequest
 WHERE quotation_id = $1
 `
 
@@ -343,7 +343,7 @@ func (q *Queries) DeleteQuotation(ctx context.Context, quotationID int32) error 
 }
 
 const deleteQuotationByCartID = `-- name: DeleteQuotationByCartID :exec
-DELETE FROM QuotationRequests WHERE cart_id = $1
+DELETE FROM QuotationRequest WHERE cart_id = $1
 `
 
 func (q *Queries) DeleteQuotationByCartID(ctx context.Context, cartID pgtype.Int4) error {
@@ -652,7 +652,7 @@ func (q *Queries) GetOrdersByDriver(ctx context.Context, driverID pgtype.UUID) (
 }
 
 const getQuotationByCartID = `-- name: GetQuotationByCartID :one
-SELECT quotation_id, total_cost, delivery_frequency, destination, special_handling, insurance, include_insurance, cart_id FROM QuotationRequests WHERE cart_id = $1
+SELECT quotation_id, total_cost, delivery_frequency, destination, special_handling, insurance, include_insurance, cart_id FROM QuotationRequest WHERE cart_id = $1
 `
 
 func (q *Queries) GetQuotationByCartID(ctx context.Context, cartID pgtype.Int4) (Quotationrequest, error) {
@@ -672,7 +672,7 @@ func (q *Queries) GetQuotationByCartID(ctx context.Context, cartID pgtype.Int4) 
 }
 
 const getQuotationByID = `-- name: GetQuotationByID :one
-SELECT quotation_id, total_cost, delivery_frequency, destination, special_handling, insurance, include_insurance, cart_id FROM QuotationRequests
+SELECT quotation_id, total_cost, delivery_frequency, destination, special_handling, insurance, include_insurance, cart_id FROM QuotationRequest
 WHERE quotation_id = $1 LIMIT 1
 `
 

@@ -158,3 +158,24 @@ func (server *Server) LogOut(c *gin.Context) {
 	c.SetCookie("token", "", -1, "", "", false, true)
 	c.JSON(http.StatusOK, gin.H{"status": "Successfully logged out."})
 }
+
+// func (server *Server) TestRoute(c *gin.Context) {
+// 	ctx := context.Background()
+// 	conn, err := server.pool.Acquire(ctx)
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"status": "Server error."})
+// 		return
+// 	}
+// 	defer conn.Release()
+// 	query := db.New(conn)
+
+// 	cartItems, err := query.GetAllShoppingCartItems(ctx, 2)
+// 	for _, item := range cartItems {
+// 		println(item.UnitPrice)
+// 	}
+// 	if err != nil {
+// 		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+// 		return
+// 	}
+// 	c.JSON(http.StatusOK, gin.H{"items": cartItems})
+// }

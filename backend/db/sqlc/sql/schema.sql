@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS ShoppingCartItems (
   FOREIGN KEY (inventory_item_id) REFERENCES InventoryItems(inventory_item_id)
 );
 
-CREATE TABLE IF NOT EXISTS QuotationRequests (
+CREATE TABLE IF NOT EXISTS QuotationRequest (
     quotation_id SERIAL PRIMARY KEY,
     total_cost FLOAT,
     delivery_frequency TEXT,
