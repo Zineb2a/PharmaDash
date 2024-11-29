@@ -76,19 +76,25 @@ CREATE TABLE IF NOT EXISTS QuotationRequest (
 CREATE TABLE IF NOT EXISTS Orders (
     order_id SERIAL PRIMARY KEY,
     account_id INT NOT NULL,
-    quotation_id INT NOT NULL,
     order_status VARCHAR(50) DEFAULT 'Created',
     created_at TIMESTAMP DEFAULT NOW(),
+    delivery_frequency TEXT,
+    destination TEXT,
+    special_handling TEXT,
+    include_insurance BOOLEAN,
+    total_cost FLOAT,
+    insurance FLOAT,
+    driver_id INT NULL, 
     FOREIGN KEY (account_id) REFERENCES Accounts(account_id),
-    FOREIGN KEY (quotation_id) REFERENCES QuotationRequest(quotation_id)
+    FOREIGN KEY (driver_id) REFERENCES Accounts(account_id)
 );
 
-ALTER TABLE Orders
-ADD COLUMN driver_id INT NULL, -- The account ID of the driver assigned to the order
-ADD CONSTRAINT fk_driver FOREIGN KEY (driver_id) REFERENCES Accounts(account_id);
+--ALTER TABLE Orders
+--ADD COLUMN driver_id INT NULL, -- The account ID of the driver assigned to the order
+--ADD CONSTRAINT fk_driver FOREIGN KEY (driver_id) REFERENCES Accounts(account_id);
 
-ALTER TABLE Orders
-    ALTER COLUMN driver_id SET DATA TYPE UUID USING driver_id::UUID;
+--ALTER TABLE Orders
+--    ALTER COLUMN driver_id SET DATA TYPE UUID USING driver_id::UUID;
 
 CREATE TABLE IF NOT EXISTS OrderItems (
     order_item_id SERIAL PRIMARY KEY,

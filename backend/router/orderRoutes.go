@@ -13,6 +13,8 @@ import (
 )
 
 func (server *Server) CreateOrder(c *gin.Context) {
+	payload := c.MustGet("auth_payload").(*token.Payload)
+	email := payload.Username
 	var req util.OrderRequest
 	decoder := json.NewDecoder(c.Request.Body)
 	if err := decoder.Decode(&req); err != nil {
@@ -35,26 +37,37 @@ func (server *Server) CreateOrder(c *gin.Context) {
 	defer conn.Rollback(ctx)
 	query := db.New(conn)
 
+	dbUser, err := query.GetUserByEmail(ctx, pgtype.Text{String: email, Valid: true})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Server error."})
+		return
+	}
+
 	// Retrieve cart and quotation info
-	cart, err := query.GetShoppingCartByClientID(ctx, req.CartID)
+	cart, err := query.GetShoppingCartByClientID(ctx, dbUser.AccountID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "Cart not found."})
 		return
 	}
 
-	quotation, err := query.GetQuotationByID(ctx, cart.CartID)
+	quotation, err := query.GetQuotationByCartID(ctx, pgtype.Int4{Int32: cart.CartID, Valid: true})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "Quotation not found."})
 		return
 	}
 
 	// Create an order from the cart
-	order, err := query.CreateOrder(ctx, db.CreateOrderParams{
-		AccountID:   cart.AccountID,
-		QuotationID: quotation.QuotationID,
+	orderID, err := query.CreateOrder(ctx, db.CreateOrderParams{
+		AccountID:         cart.AccountID,
+		DeliveryFrequency: quotation.DeliveryFrequency,
+		Destination:       quotation.Destination,
+		SpecialHandling:   quotation.SpecialHandling,
+		IncludeInsurance:  quotation.IncludeInsurance,
+		TotalCost:         quotation.TotalCost,
+		Insurance:         quotation.Insurance,
 	})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to create order."})
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to create order.", "error": err.Error()})
 		return
 	}
 
@@ -67,7 +80,7 @@ func (server *Server) CreateOrder(c *gin.Context) {
 
 	for _, item := range cartItems {
 		_, err := query.CreateOrderItem(ctx, db.CreateOrderItemParams{
-			OrderID:         order.OrderID,
+			OrderID:         orderID,
 			InventoryItemID: item.InventoryItemID,
 			Quantity:        pgtype.Int4{Int32: 1, Valid: true}, // Wrapping 1 in pgtype.Int4
 		})
@@ -84,16 +97,16 @@ func (server *Server) CreateOrder(c *gin.Context) {
 		return
 	}
 
-	_, err = query.DeleteCart(ctx, cart.CartID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to delete cart."})
-		return
-	}
-
 	// Delete the quotation
 	err = query.DeleteQuotation(ctx, quotation.QuotationID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to delete quotation."})
+		return
+	}
+
+	_, err = query.DeleteCart(ctx, cart.CartID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Failed to delete cart."})
 		return
 	}
 
@@ -104,7 +117,7 @@ func (server *Server) CreateOrder(c *gin.Context) {
 	}
 
 	// Respond with success
-	c.JSON(http.StatusOK, gin.H{"status": "Order created successfully", "order_id": order.OrderID})
+	c.JSON(http.StatusOK, gin.H{"status": "Order created successfully", "order_id": orderID})
 }
 
 func (server *Server) GetAllOrdersClient(c *gin.Context) {
@@ -139,7 +152,7 @@ func (server *Server) GetAllOrdersAdmin(c *gin.Context) {
 	ctx := context.Background()
 	conn, err := server.pool.Acquire(ctx)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "Server error."})
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Server error.", "error": err.Error()})
 		return
 	}
 	defer conn.Release()
@@ -147,7 +160,7 @@ func (server *Server) GetAllOrdersAdmin(c *gin.Context) {
 
 	dbOrders, err := query.GetAllOrders(ctx)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "Server error."})
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Server error.", "error": err.Error()})
 		return
 	}
 

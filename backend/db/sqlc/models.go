@@ -46,12 +46,17 @@ type Inventoryitem struct {
 }
 
 type Order struct {
-	OrderID     int32
-	AccountID   int32
-	QuotationID int32
-	OrderStatus pgtype.Text
-	CreatedAt   pgtype.Timestamp
-	DriverID    pgtype.UUID
+	OrderID           int32
+	AccountID         int32
+	OrderStatus       pgtype.Text
+	CreatedAt         pgtype.Timestamp
+	DeliveryFrequency pgtype.Text
+	Destination       pgtype.Text
+	SpecialHandling   pgtype.Text
+	IncludeInsurance  pgtype.Bool
+	TotalCost         pgtype.Float8
+	Insurance         pgtype.Float8
+	DriverID          pgtype.Int4
 }
 
 type Orderitem struct {

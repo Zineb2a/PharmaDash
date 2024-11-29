@@ -130,9 +130,9 @@ func (server *Server) PickUpOrder(c *gin.Context) {
 		return
 	}
 
-	id := ConvertUUIDToPGTypeUUID(payload.ID)
+	//id := ConvertUUIDToPGTypeUUID(payload.ID)
 	assignOrder := db.AssignOrderToDriverParams{
-		DriverID: id,
+		DriverID: pgtype.Int4{Int32: 1, Valid: true},
 		OrderID:  req.OrderID,
 	}
 

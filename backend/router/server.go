@@ -71,7 +71,7 @@ func GetNewServer() (*Server, error) {
 		}
 		order := router.Group("/order")
 		{
-			order.POST("/create_order", server.CreateOrder)
+			order.POST("/create_order", server.mustAuthChecker, server.CreateOrder)
 			order.GET("/get_orders_client", server.mustAuthChecker, server.GetAllOrdersClient)
 			order.GET("/get_orders", server.GetAllOrdersAdmin)
 		}

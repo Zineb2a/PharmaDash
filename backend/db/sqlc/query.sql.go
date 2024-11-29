@@ -99,7 +99,7 @@ WHERE order_id = $2 AND driver_id IS NULL
 `
 
 type AssignOrderToDriverParams struct {
-	DriverID pgtype.UUID
+	DriverID pgtype.Int4
 	OrderID  int32
 }
 
@@ -109,35 +109,34 @@ func (q *Queries) AssignOrderToDriver(ctx context.Context, arg AssignOrderToDriv
 }
 
 const createOrder = `-- name: CreateOrder :one
-INSERT INTO Orders (account_id, quotation_id) 
-VALUES ($1, $2) 
-RETURNING order_id, account_id, quotation_id, order_status, created_at
+INSERT INTO Orders (account_id, delivery_frequency, destination, special_handling, include_insurance, total_cost, insurance) 
+VALUES ($1, $2, $3, $4, $5, $6, $7) 
+RETURNING order_id
 `
 
 type CreateOrderParams struct {
-	AccountID   int32
-	QuotationID int32
+	AccountID         int32
+	DeliveryFrequency pgtype.Text
+	Destination       pgtype.Text
+	SpecialHandling   pgtype.Text
+	IncludeInsurance  pgtype.Bool
+	TotalCost         pgtype.Float8
+	Insurance         pgtype.Float8
 }
 
-type CreateOrderRow struct {
-	OrderID     int32
-	AccountID   int32
-	QuotationID int32
-	OrderStatus pgtype.Text
-	CreatedAt   pgtype.Timestamp
-}
-
-func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (CreateOrderRow, error) {
-	row := q.db.QueryRow(ctx, createOrder, arg.AccountID, arg.QuotationID)
-	var i CreateOrderRow
-	err := row.Scan(
-		&i.OrderID,
-		&i.AccountID,
-		&i.QuotationID,
-		&i.OrderStatus,
-		&i.CreatedAt,
+func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (int32, error) {
+	row := q.db.QueryRow(ctx, createOrder,
+		arg.AccountID,
+		arg.DeliveryFrequency,
+		arg.Destination,
+		arg.SpecialHandling,
+		arg.IncludeInsurance,
+		arg.TotalCost,
+		arg.Insurance,
 	)
-	return i, err
+	var order_id int32
+	err := row.Scan(&order_id)
+	return order_id, err
 }
 
 const createOrderItem = `-- name: CreateOrderItem :one
@@ -381,7 +380,7 @@ func (q *Queries) FreeItem(ctx context.Context, inventoryItemID int32) (Inventor
 }
 
 const getAllClientOrders = `-- name: GetAllClientOrders :many
-SELECT order_id, account_id, quotation_id, order_status, created_at, driver_id FROM Orders 
+SELECT order_id, account_id, order_status, created_at, delivery_frequency, destination, special_handling, include_insurance, total_cost, insurance, driver_id FROM Orders 
 WHERE account_id = $1
 `
 
@@ -397,9 +396,14 @@ func (q *Queries) GetAllClientOrders(ctx context.Context, accountID int32) ([]Or
 		if err := rows.Scan(
 			&i.OrderID,
 			&i.AccountID,
-			&i.QuotationID,
 			&i.OrderStatus,
 			&i.CreatedAt,
+			&i.DeliveryFrequency,
+			&i.Destination,
+			&i.SpecialHandling,
+			&i.IncludeInsurance,
+			&i.TotalCost,
+			&i.Insurance,
 			&i.DriverID,
 		); err != nil {
 			return nil, err
@@ -446,7 +450,7 @@ func (q *Queries) GetAllInventoryItems(ctx context.Context) ([]Inventory, error)
 }
 
 const getAllOrders = `-- name: GetAllOrders :many
-SELECT order_id, account_id, quotation_id, order_status, created_at, driver_id FROM Orders
+SELECT order_id, account_id, order_status, created_at, delivery_frequency, destination, special_handling, include_insurance, total_cost, insurance, driver_id FROM Orders
 `
 
 func (q *Queries) GetAllOrders(ctx context.Context) ([]Order, error) {
@@ -461,9 +465,14 @@ func (q *Queries) GetAllOrders(ctx context.Context) ([]Order, error) {
 		if err := rows.Scan(
 			&i.OrderID,
 			&i.AccountID,
-			&i.QuotationID,
 			&i.OrderStatus,
 			&i.CreatedAt,
+			&i.DeliveryFrequency,
+			&i.Destination,
+			&i.SpecialHandling,
+			&i.IncludeInsurance,
+			&i.TotalCost,
+			&i.Insurance,
 			&i.DriverID,
 		); err != nil {
 			return nil, err
@@ -523,7 +532,7 @@ func (q *Queries) GetAvailableInventoryItem(ctx context.Context, inventoryID int
 }
 
 const getAvailableOrders = `-- name: GetAvailableOrders :many
-SELECT order_id, account_id, quotation_id, order_status, created_at, driver_id 
+SELECT order_id, account_id, order_status, created_at, delivery_frequency, destination, special_handling, include_insurance, total_cost, insurance, driver_id 
 FROM Orders 
 WHERE driver_id IS NULL AND order_status = 'Created'
 `
@@ -540,9 +549,14 @@ func (q *Queries) GetAvailableOrders(ctx context.Context) ([]Order, error) {
 		if err := rows.Scan(
 			&i.OrderID,
 			&i.AccountID,
-			&i.QuotationID,
 			&i.OrderStatus,
 			&i.CreatedAt,
+			&i.DeliveryFrequency,
+			&i.Destination,
+			&i.SpecialHandling,
+			&i.IncludeInsurance,
+			&i.TotalCost,
+			&i.Insurance,
 			&i.DriverID,
 		); err != nil {
 			return nil, err
@@ -619,12 +633,10 @@ func (q *Queries) GetOrderStatus(ctx context.Context, orderID int32) (pgtype.Tex
 }
 
 const getOrdersByDriver = `-- name: GetOrdersByDriver :many
-SELECT order_id, account_id, quotation_id, order_status, created_at, driver_id 
-FROM Orders 
-WHERE driver_id = $1
+SELECT order_id, account_id, order_status, created_at, delivery_frequency, destination, special_handling, include_insurance, total_cost, insurance, driver_id FROM Orders WHERE driver_id = $1
 `
 
-func (q *Queries) GetOrdersByDriver(ctx context.Context, driverID pgtype.UUID) ([]Order, error) {
+func (q *Queries) GetOrdersByDriver(ctx context.Context, driverID pgtype.Int4) ([]Order, error) {
 	rows, err := q.db.Query(ctx, getOrdersByDriver, driverID)
 	if err != nil {
 		return nil, err
@@ -636,9 +648,14 @@ func (q *Queries) GetOrdersByDriver(ctx context.Context, driverID pgtype.UUID) (
 		if err := rows.Scan(
 			&i.OrderID,
 			&i.AccountID,
-			&i.QuotationID,
 			&i.OrderStatus,
 			&i.CreatedAt,
+			&i.DeliveryFrequency,
+			&i.Destination,
+			&i.SpecialHandling,
+			&i.IncludeInsurance,
+			&i.TotalCost,
+			&i.Insurance,
 			&i.DriverID,
 		); err != nil {
 			return nil, err

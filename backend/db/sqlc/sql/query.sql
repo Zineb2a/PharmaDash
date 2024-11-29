@@ -99,9 +99,10 @@ SELECT * FROM QuotationRequest
 WHERE quotation_id = $1 LIMIT 1;
 
 -- name: CreateOrder :one
-INSERT INTO Orders (account_id, quotation_id) 
-VALUES ($1, $2) 
-RETURNING order_id, account_id, quotation_id, order_status, created_at;
+INSERT INTO Orders (account_id, delivery_frequency, destination, special_handling, include_insurance, total_cost, insurance) 
+VALUES ($1, $2, $3, $4, $5, $6, $7) 
+RETURNING order_id;
+
 
 -- name: CreateOrderItem :one
 INSERT INTO OrderItems (order_id, inventory_item_id, quantity) 
@@ -161,9 +162,7 @@ SET driver_id = $1, order_status = 'Out for delivery' -- The account ID of the d
 WHERE order_id = $2 AND driver_id IS NULL;
 
 -- name: GetOrdersByDriver :many
-SELECT * 
-FROM Orders 
-WHERE driver_id = $1;
+SELECT * FROM Orders WHERE driver_id = $1;
 
 -- name: GetQuotationByCartID :one
 SELECT * FROM QuotationRequest WHERE cart_id = $1;
