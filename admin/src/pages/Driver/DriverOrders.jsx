@@ -31,7 +31,7 @@ const DriverOrder = () => {
   // Pick up an order
   const selectOrder = async (orderId) => {
     try {
-      const payload = { OrderID: orderId };
+      const payload = { order_id: orderId };
 
       const response = await axios.post(
         "http://localhost:3000/user/driver_picks_up",
@@ -65,7 +65,7 @@ const DriverOrder = () => {
     try {
       console.log("Attempting to confirm delivery for order:", orderId);
 
-      const payload = { OrderID: orderId };
+      const payload = { order_id: orderId }; 
 
       const response = await axios.post(
         "http://localhost:3000/user/driver_confirm_delivery",
