@@ -18,7 +18,9 @@ type Server struct {
 	pool   *pgxpool.Pool
 }
 
-func GetNewServer() (*Server, error) {
+var server *Server
+
+func getNewServer() (*Server, error) {
 	//load env vars
 	godotenv.Load()
 	key := os.Getenv("TOKEN_KEY")
@@ -88,6 +90,15 @@ func GetNewServer() (*Server, error) {
 		}
 	}
 	return server, nil
+}
+
+func GetServerSingleton() (*Server, error) {
+	if server == nil {
+		server, err := getNewServer()
+		return server, err
+	} else {
+		return server, nil
+	}
 }
 
 func (server *Server) NotImplemented(c *gin.Context) {

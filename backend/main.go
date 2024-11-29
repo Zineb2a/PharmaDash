@@ -10,7 +10,7 @@ import (
 func main() {
 
 	// Server
-	server, err := server.GetNewServer()
+	server, err := server.GetServerSingleton()
 	if err != nil {
 		log.Fatal("Could not start the server")
 	}
