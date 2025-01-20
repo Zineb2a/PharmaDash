@@ -1,4 +1,5 @@
 # Delivery Web Application: PharmaDash
+<img width="1495" alt="Screenshot 2025-01-19 at 22 06 01" src="https://github.com/user-attachments/assets/c7c5c6d8-290f-4cb0-a24d-806b5b1fcdc7" />
 
 ## Project Description
 PharmaDash is a web-based medication delivery service designed to provide users with an easy, reliable, and fast way to get both over-the-counter and prescription medications delivered to their doorstep. This platform enables users to securely upload prescriptions, browse available medications, and track their orders in real-time. The application aims to bridge the gap between patients and pharmacies, offering a streamlined experience for medication management.
